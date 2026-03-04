@@ -13,12 +13,17 @@
  * - Strict geometry (no rounded)
  * - Grove color palette
  * - Amber active states
+ *
+ * v0.4.1 Additions:
+ * - Andon dropdown in PromptTray (moved from Header)
+ * - DiagnosticCard renders inline when interaction.status === 'halted'
  */
 
 import { useState, useRef, useEffect } from 'react'
-import { useApp, useTutorial, usePendingApproval } from '../../state/context'
+import { useApp, useTutorial, usePendingApproval, usePipeline } from '../../state/context'
 import { processInteraction, continueAfterApproval, rejectInteraction } from '../../services'
-import type { Interaction } from '../../state/types'
+import { DiagnosticCard } from '../Diagnostic/DiagnosticCard'
+import type { Interaction, FailureType } from '../../state/types'
 
 // Preset prompts for the tray
 const PRESETS = [
@@ -58,6 +63,7 @@ export function InteractionPane() {
   const { state, dispatch } = useApp()
   const tutorial = useTutorial()
   const pendingApproval = usePendingApproval()
+  const pipeline = usePipeline()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -174,6 +180,8 @@ export function InteractionPane() {
                 hasSkill={hasSkill(interaction.intent)}
                 onRunAgain={() => handleRunAgain(interaction)}
                 processing={processing}
+                haltReason={interaction.status === 'halted' ? pipeline.haltReason : null}
+                onReset={() => dispatch({ type: 'RESET_PIPELINE' })}
               />
             ))}
             {/* Scroll anchor with breathing room */}
@@ -223,6 +231,8 @@ export function InteractionPane() {
           skills={state.skills}
           onSelect={handlePreset}
           disabled={processing || !!pendingApproval}
+          simulateFailure={state.simulateFailure}
+          onFailureChange={(failureType) => dispatch({ type: 'SET_FAILURE_SIMULATION', failureType })}
         />
       )}
 
@@ -260,9 +270,11 @@ interface InteractionCardProps {
   hasSkill: boolean
   onRunAgain: () => void
   processing: boolean
+  haltReason: import('../../state/types').HaltReason | null
+  onReset: () => void
 }
 
-function InteractionCard({ interaction, isSelected, hasSkill, onRunAgain, processing }: InteractionCardProps) {
+function InteractionCard({ interaction, isSelected, hasSkill, onRunAgain, processing, haltReason, onReset }: InteractionCardProps) {
   return (
     <div
       className={`
@@ -271,6 +283,7 @@ function InteractionCard({ interaction, isSelected, hasSkill, onRunAgain, proces
         ${interaction.zone === 'yellow' ? 'border-zone-yellow' : ''}
         ${interaction.zone === 'red' ? 'border-zone-red' : ''}
         ${interaction.status === 'pending' ? 'opacity-70' : ''}
+        ${interaction.status === 'halted' ? 'border-grove-red' : ''}
         ${isSelected ? 'ring-2 ring-grove-amber' : ''}
       `}
     >
@@ -335,6 +348,11 @@ function InteractionCard({ interaction, isSelected, hasSkill, onRunAgain, proces
           ✗ Rejected by user
         </div>
       )}
+
+      {/* Inline Diagnostic Card (Digital Jidoka) */}
+      {interaction.status === 'halted' && haltReason && (
+        <DiagnosticCard reason={haltReason} onReset={onReset} />
+      )}
     </div>
   )
 }
@@ -388,46 +406,69 @@ interface PromptTrayProps {
   skills: { intentMatch: string }[]
   onSelect: (input: string) => void
   disabled: boolean
+  simulateFailure: FailureType
+  onFailureChange: (failureType: FailureType) => void
 }
 
-function PromptTray({ presets, skills, onSelect, disabled }: PromptTrayProps) {
+function PromptTray({ presets, skills, onSelect, disabled, simulateFailure, onFailureChange }: PromptTrayProps) {
   const hasSkill = (intent: string) =>
     skills.some((s) => s.intentMatch === intent)
 
   return (
     <div className="border-t border-grove-border/50 px-4 py-2 bg-grove-bg/50">
-      <div className="flex gap-2 overflow-x-auto scrollbar-thin pb-1">
-        {presets.map((preset) => {
-          const skilled = hasSkill(preset.intent)
-          return (
-            <button
-              key={preset.intent}
-              onClick={() => onSelect(preset.input)}
-              disabled={disabled}
-              className={`
-                flex items-center gap-2 px-3 py-1.5 text-xs font-mono whitespace-nowrap
-                transition-all disabled:opacity-50
-                ${skilled
-                  ? 'bg-tier-0/10 border border-tier-0/50 text-tier-0 hover:bg-tier-0/20'
-                  : `bg-grove-bg border border-zone-${preset.zone}/30 text-grove-text-mid hover:border-zone-${preset.zone} hover:text-grove-text`
-                }
-              `}
-            >
-              <span
-                className={`w-2 h-2 ${
-                  skilled
-                    ? 'bg-tier-0 shadow-[0_0_6px_var(--tier-0)]'
-                    : `bg-zone-${preset.zone} shadow-[0_0_4px_var(--zone-${preset.zone})]`
-                }`}
-              />
-              {skilled && <span>⚡</span>}
-              {preset.label}
-              <span className="text-grove-text-dim">
-                {skilled ? 'T0' : `T${preset.tier}`}
-              </span>
-            </button>
-          )
-        })}
+      <div className="flex items-center justify-between gap-4">
+        {/* Preset Pills */}
+        <div className="flex gap-2 overflow-x-auto scrollbar-thin pb-1 flex-1">
+          {presets.map((preset) => {
+            const skilled = hasSkill(preset.intent)
+            return (
+              <button
+                key={preset.intent}
+                onClick={() => onSelect(preset.input)}
+                disabled={disabled}
+                className={`
+                  flex items-center gap-2 px-3 py-1.5 text-xs font-mono whitespace-nowrap
+                  transition-all disabled:opacity-50
+                  ${skilled
+                    ? 'bg-tier-0/10 border border-tier-0/50 text-tier-0 hover:bg-tier-0/20'
+                    : `bg-grove-bg border border-zone-${preset.zone}/30 text-grove-text-mid hover:border-zone-${preset.zone} hover:text-grove-text`
+                  }
+                `}
+              >
+                <span
+                  className={`w-2 h-2 ${
+                    skilled
+                      ? 'bg-tier-0 shadow-[0_0_6px_var(--tier-0)]'
+                      : `bg-zone-${preset.zone} shadow-[0_0_4px_var(--zone-${preset.zone})]`
+                  }`}
+                />
+                {skilled && <span>⚡</span>}
+                {preset.label}
+                <span className="text-grove-text-dim">
+                  {skilled ? 'T0' : `T${preset.tier}`}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+
+        {/* Andon Dropdown — Far Right */}
+        <select
+          value={simulateFailure}
+          onChange={(e) => onFailureChange(e.target.value as FailureType)}
+          className={`
+            font-mono text-xs px-2 py-1 border flex-shrink-0
+            ${simulateFailure !== 'none'
+              ? 'bg-grove-red/20 border-grove-red text-grove-red'
+              : 'bg-grove-bg border-grove-border text-grove-text-dim'
+            }
+          `}
+        >
+          <option value="none">Jidoka: Normal</option>
+          <option value="api_timeout">Jidoka: API Timeout</option>
+          <option value="low_confidence">Jidoka: Low Confidence</option>
+          <option value="hallucination_detected">Jidoka: Hallucination</option>
+        </select>
       </div>
     </div>
   )

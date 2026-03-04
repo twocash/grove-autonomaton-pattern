@@ -194,6 +194,7 @@ export function appReducer(state: AppState, action: AppAction): AppState {
     }
 
     case 'RESET_PIPELINE':
+      // v0.4.1: Also clear 'halted' status on interactions
       return {
         ...state,
         pipeline: {
@@ -202,9 +203,16 @@ export function appReducer(state: AppState, action: AppAction): AppState {
           halted: false,
           haltReason: null,
         },
+        interactions: state.interactions.map((interaction) =>
+          interaction.status === 'halted'
+            ? { ...interaction, status: 'completed' as const }
+            : interaction
+        ),
       }
 
-    case 'HALT_PIPELINE':
+    case 'HALT_PIPELINE': {
+      // v0.4.1: Also mark the last interaction as 'halted' for inline DiagnosticCard
+      const lastInteractionIndex = state.interactions.length - 1
       return {
         ...state,
         pipeline: {
@@ -216,7 +224,15 @@ export function appReducer(state: AppState, action: AppAction): AppState {
             [action.reason.stage]: 'error',
           },
         },
+        interactions: lastInteractionIndex >= 0
+          ? state.interactions.map((interaction, idx) =>
+              idx === lastInteractionIndex
+                ? { ...interaction, status: 'halted' as const }
+                : interaction
+            )
+          : state.interactions,
       }
+    }
 
     // =========================================================================
     // INTERACTIONS

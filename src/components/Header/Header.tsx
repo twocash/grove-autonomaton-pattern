@@ -1,23 +1,20 @@
 /**
- * Header — Mode toggle, Model Config, Andon Cord, Deck Link
+ * Header — Logo, Deck Link, Mode Toggle
  *
  * Typography: Instrument Serif for logo
  * No rounded corners (strict geometry)
+ *
+ * v0.4.1: Andon dropdown moved to InteractionPane PromptTray
  */
 
 import { useAppState, useAppDispatch } from '../../state/context'
-import type { FailureType } from '../../state/types'
 
 export function Header() {
-  const { mode, simulateFailure } = useAppState()
+  const { mode } = useAppState()
   const dispatch = useAppDispatch()
 
   const handleModeToggle = () => {
     dispatch({ type: 'SET_MODE', mode: mode === 'demo' ? 'interactive' : 'demo' })
-  }
-
-  const handleFailureToggle = (failureType: FailureType) => {
-    dispatch({ type: 'SET_FAILURE_SIMULATION', failureType })
   }
 
   return (
@@ -41,27 +38,6 @@ export function Header() {
           >
             [ Read the Pattern Deck ]
           </a>
-
-          {/* Andon Cord - Pull to simulate failure */}
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-grove-text-dim">Andon:</span>
-            <select
-              value={simulateFailure}
-              onChange={(e) => handleFailureToggle(e.target.value as FailureType)}
-              className={`
-                text-sm px-3 py-1 border
-                ${simulateFailure !== 'none'
-                  ? 'bg-grove-red/20 border-grove-red text-grove-red'
-                  : 'bg-grove-bg border-grove-border text-grove-text-mid'
-                }
-              `}
-            >
-              <option value="none">Normal</option>
-              <option value="api_timeout">🔴 API Timeout</option>
-              <option value="low_confidence">🔴 Low Confidence</option>
-              <option value="hallucination_detected">🔴 Hallucination</option>
-            </select>
-          </div>
 
           {/* Mode Toggle */}
           <div className="flex items-center gap-2">

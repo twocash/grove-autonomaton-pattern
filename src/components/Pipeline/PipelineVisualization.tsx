@@ -8,9 +8,11 @@
  * Telemetry → Recognition → Compilation → Approval → Execution
  *
  * Design: Strict geometry (no rounded), grove amber active state
+ *
+ * v0.4.1: Halt reason display moved inline to InteractionCard (DiagnosticCard)
  */
 
-import { usePipeline, useAppDispatch } from '../../state/context'
+import { usePipeline } from '../../state/context'
 import type { PipelineStage as PipelineStageType } from '../../state/types'
 import { PipelineStage, STAGE_META } from './PipelineStage'
 import { PipelineConnector } from './PipelineConnector'
@@ -25,7 +27,6 @@ const STAGES: PipelineStageType[] = [
 
 export function PipelineVisualization() {
   const pipeline = usePipeline()
-  const dispatch = useAppDispatch()
 
   return (
     <section className="border-b border-grove-border bg-grove-bg2 py-6">
@@ -47,33 +48,6 @@ export function PipelineVisualization() {
           </div>
         ))}
       </div>
-
-      {/* Halt reason display (Jidoka) */}
-      {pipeline.halted && pipeline.haltReason && (
-        <div className="mt-4 mx-auto max-w-2xl">
-          <div className="bg-grove-red/10 border border-grove-red/50 p-4">
-            <div className="flex items-center gap-2 text-grove-red font-medium mb-2">
-              <span>🛑</span>
-              <span>Pipeline Halted at {STAGE_META[pipeline.haltReason.stage]?.label}</span>
-            </div>
-            <p className="text-sm text-grove-red/80 mb-2">{pipeline.haltReason.error}</p>
-            <div className="text-xs text-grove-text-dim">
-              <span className="text-grove-text-dim">Expected: </span>
-              {pipeline.haltReason.expected}
-            </div>
-            <div className="text-xs text-grove-amber mt-2">
-              <span className="text-grove-text-dim">Proposed fix: </span>
-              {pipeline.haltReason.proposedFix}
-            </div>
-            <button
-              onClick={() => dispatch({ type: 'RESET_PIPELINE' })}
-              className="mt-3 text-xs bg-grove-border hover:bg-grove-border-light text-grove-text px-3 py-1 transition-colors"
-            >
-              Clear &amp; Reset Pipeline
-            </button>
-          </div>
-        </div>
-      )}
     </section>
   )
 }
