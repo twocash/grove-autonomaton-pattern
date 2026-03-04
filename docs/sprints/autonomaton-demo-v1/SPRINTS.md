@@ -576,6 +576,9 @@ Before starting this epic, verify:
 - Step 2: Config editing
 - Step 3: Skill flywheel
 - Completion unlocks free exploration
+- **Add subtle "Skip to Sandbox →" link** for impatient engineers who want to explore immediately
+- Skip link should be visible but not prominent (small text, bottom of overlay)
+- Skipping still initializes state properly, just bypasses guided steps
 
 **Files:**
 - `src/components/Tutorial/TutorialOverlay.tsx`
@@ -606,17 +609,27 @@ Before starting this epic, verify:
 - `src/components/Header/Header.tsx`
 - `src/components/Header/index.ts`
 
-### Story 8.7: Implement Diagnostic Card (Jidoka)
+### Story 8.7: Implement Diagnostic Card (Jidoka) + Andon Toggle
 
 **Task:**
 - Create `DiagnosticCard.tsx`
 - Shows: failed stage, error, expected behavior, proposed fix
-- Pipeline halts visually
-- Trigger via malformed input or toggle
+- Pipeline halts visually with dramatic red/amber state
+- **Create explicit "Pull Andon Cord" toggle in header** (next to Mode toggle)
+  - Highly visible button: "🚨 Simulate Failure" or "Pull Andon Cord"
+  - Dropdown options: "API Timeout", "Confidence Below Threshold", "Hallucination Detected"
+  - When active, next interaction triggers violent pipeline halt
+  - Pipeline stages after failure point go dark/gray
+  - Red Kaizen/Diagnostic card flashes at the failed stage
+- This is a **first-class feature**, not an edge case — users should discover it, not stumble into it
 
 **Files:**
 - `src/components/Interaction/DiagnosticCard.tsx`
+- `src/components/Header/AndonToggle.tsx` (new)
+- `src/components/Header/Header.tsx` (update)
 - `src/services/pipeline-orchestrator.ts` (update)
+- `src/state/types.ts` (add failure simulation state)
+- `src/state/reducer.ts` (add failure actions)
 
 ### Story 8.8: Final Layout Assembly
 
@@ -676,6 +689,7 @@ npm run build
 4. [ ] Step 3: 3x "Summarize notes" triggers flywheel
 5. [ ] Tutorial completion unlocks free exploration
 6. [ ] Dashboard populated with tutorial telemetry
+7. [ ] "Skip to Sandbox" link visible and functional
 
 ### Visual Polish Check
 

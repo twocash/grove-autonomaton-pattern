@@ -508,18 +508,20 @@ Run these after all epics complete:
 | 6. The Ratchet | Approve skill → next match shows Tier 0, cost $0.00 |
 | 7. Transparency | Click interaction → telemetry highlights. Export works. |
 | 8. Model Independence | Change model dropdown → routing unchanged |
-| 9. Digital Jidoka | Type gibberish with low confidence → pipeline halts |
+| 9. Digital Jidoka | Click "Pull Andon Cord" → run interaction → pipeline halts violently |
 
 ---
 
 ## Final Checklist
 
 - [ ] Tutorial completes in under 3 minutes
+- [ ] "Skip to Sandbox" link works for impatient engineers
 - [ ] All 9 claims are demonstrable
 - [ ] No console errors
 - [ ] Professional visual polish
 - [ ] Export audit log works
 - [ ] Mode toggle (Demo/Interactive) works
+- [ ] "Pull Andon Cord" toggle visible and functional
 - [ ] README.md created with setup instructions
 
 ---
@@ -535,6 +537,7 @@ Run these after all epics complete:
 | `src/components/Config/ConfigEditor.tsx` | Live config editing |
 | `src/components/Skills/SkillProposalModal.tsx` | Flywheel trigger |
 | `src/components/Tutorial/TutorialOverlay.tsx` | Guided onboarding |
+| `src/components/Header/AndonToggle.tsx` | "Pull Andon Cord" failure simulation |
 
 ---
 
