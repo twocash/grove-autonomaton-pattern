@@ -1,5 +1,5 @@
 /**
- * TelemetryStream — Real-time audit trail
+ * TelemetryStream — Real-time audit trail (Terminal aesthetic)
  *
  * This proves Claim #7: Transparency by construction.
  * Every routing decision is a traced artifact.
@@ -8,6 +8,7 @@
  * - Live JSON stream of every interaction
  * - Click entry → highlights corresponding interaction
  * - Export audit log as JSON
+ * - Terminal-style green tint for visual distinction from chat UI
  */
 
 import { useTelemetry, useAppDispatch, useAppState } from '../../state/context'
@@ -33,20 +34,23 @@ export function TelemetryStream() {
   }
 
   return (
-    <section className="h-48 border-t border-slate-700 bg-slate-950 flex flex-col">
+    <section className="h-48 border-t border-slate-700 bg-slate-950 flex flex-col terminal-stream">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-2 border-b border-slate-800">
-        <span className="text-sm font-medium text-slate-400">
-          Telemetry Stream
+      <div className="flex items-center justify-between px-4 py-2 border-b border-slate-800/50">
+        <div className="flex items-center gap-2">
+          <span className="text-green-500 animate-pulse">●</span>
+          <span className="text-sm font-medium text-green-400/80">
+            Telemetry Stream
+          </span>
           {telemetry.length > 0 && (
-            <span className="ml-2 text-xs text-slate-500">
+            <span className="text-xs text-green-600">
               ({telemetry.length} entries)
             </span>
           )}
-        </span>
+        </div>
         <button
           onClick={handleExport}
-          className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
+          className="text-xs text-green-400 hover:text-green-300 transition-colors border border-green-800 hover:border-green-600 px-2 py-0.5 rounded"
         >
           Export Audit Log
         </button>
@@ -55,10 +59,11 @@ export function TelemetryStream() {
       {/* Stream */}
       <div className="flex-1 p-2 overflow-y-auto scrollbar-thin font-mono text-xs">
         {telemetry.length === 0 ? (
-          <div className="text-slate-600 p-2">
-            <p>// Telemetry entries will appear here...</p>
-            <p>// Each interaction generates a structured audit record</p>
-            <p>// Click any entry to highlight the corresponding interaction</p>
+          <div className="text-green-700 p-2 space-y-1">
+            <p><span className="text-green-500">&gt;</span> Telemetry entries will appear here...</p>
+            <p><span className="text-green-500">&gt;</span> Each interaction generates a structured audit record</p>
+            <p><span className="text-green-500">&gt;</span> Click any entry to highlight the corresponding interaction</p>
+            <p className="text-green-800 mt-4">_</p>
           </div>
         ) : (
           <div className="space-y-1">
@@ -71,15 +76,21 @@ export function TelemetryStream() {
                   ${selectedTelemetryId === entry.id ? 'selected' : ''}
                 `}
               >
-                <span className="text-slate-500">{entry.timestamp.slice(11, 19)}</span>
-                <span className="text-slate-400"> │ </span>
-                <span className="text-blue-400">{entry.intent}</span>
-                <span className="text-slate-400"> │ </span>
-                <span className={`tier-${entry.tier}`}>T{entry.tier}</span>
-                <span className="text-slate-400"> │ </span>
-                <span className={`zone-${entry.zone}`}>{entry.zone}</span>
-                <span className="text-slate-400"> │ </span>
-                <span className="text-slate-300">${entry.cost.toFixed(4)}</span>
+                <span className="text-green-600 font-semibold">{entry.timestamp.slice(11, 19)}</span>
+                <span className="text-slate-600"> │ </span>
+                <span className="text-green-400">{entry.intent}</span>
+                <span className="text-slate-600"> │ </span>
+                <TierBadge tier={entry.tier} />
+                <span className="text-slate-600"> │ </span>
+                <ZoneBadge zone={entry.zone} />
+                <span className="text-slate-600"> │ </span>
+                <span className="text-green-300">${entry.cost.toFixed(4)}</span>
+                {entry.skillMatch && (
+                  <>
+                    <span className="text-slate-600"> │ </span>
+                    <span className="text-tier-0">⚡cached</span>
+                  </>
+                )}
               </div>
             ))}
           </div>
@@ -87,4 +98,23 @@ export function TelemetryStream() {
       </div>
     </section>
   )
+}
+
+function TierBadge({ tier }: { tier: number }) {
+  const colors: Record<number, string> = {
+    0: 'text-tier-0',
+    1: 'text-tier-1',
+    2: 'text-tier-2',
+    3: 'text-tier-3',
+  }
+  return <span className={colors[tier] || 'text-slate-400'}>T{tier}</span>
+}
+
+function ZoneBadge({ zone }: { zone: string }) {
+  const colors: Record<string, string> = {
+    green: 'text-zone-green',
+    yellow: 'text-zone-yellow',
+    red: 'text-zone-red',
+  }
+  return <span className={colors[zone] || 'text-slate-400'}>{zone}</span>
 }

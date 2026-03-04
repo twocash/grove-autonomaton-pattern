@@ -88,11 +88,33 @@
   /* Telemetry entry */
   .telemetry-entry {
     @apply font-mono text-xs bg-slate-950 p-2 rounded border-l-2 border-slate-700;
-    @apply hover:border-blue-500 cursor-pointer transition-colors;
+    @apply hover:border-green-500 cursor-pointer transition-colors;
   }
 
   .telemetry-entry.selected {
-    @apply border-blue-500 bg-blue-950/30;
+    @apply border-green-500 bg-green-950/30;
+  }
+
+  /* Terminal-style telemetry stream */
+  .terminal-stream {
+    @apply bg-slate-950 font-mono;
+    text-shadow: 0 0 2px theme('colors.green.400 / 30%');
+  }
+
+  .terminal-stream .timestamp {
+    @apply text-green-600;
+  }
+
+  .terminal-stream .key {
+    @apply text-green-400;
+  }
+
+  .terminal-stream .value {
+    @apply text-slate-300;
+  }
+
+  .terminal-stream .bracket {
+    @apply text-slate-500;
   }
 }
 
@@ -168,4 +190,36 @@
 
 .animate-slide-up {
   animation: slide-up 0.3s ease-out;
+}
+
+/* Pulse border for config editor invitation */
+@keyframes pulse-border {
+  0%, 100% {
+    border-color: theme('colors.slate.700');
+    box-shadow: 0 0 0 0 theme('colors.blue.500 / 0%');
+  }
+  50% {
+    border-color: theme('colors.blue.500');
+    box-shadow: 0 0 8px 2px theme('colors.blue.500 / 30%');
+  }
+}
+
+.animate-pulse-border {
+  animation: pulse-border 2s ease-in-out infinite;
+}
+
+/* Ripple animation for config changes */
+@keyframes animate-ripple {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1.2);
+    opacity: 0;
+  }
+}
+
+.animate-ripple {
+  animation: animate-ripple 0.6s ease-out forwards;
 }

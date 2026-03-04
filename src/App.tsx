@@ -24,7 +24,7 @@ import { Dashboard } from './components/Dashboard'
 import { InteractionPane } from './components/Interaction'
 import { ConfigEditor } from './components/Config'
 import { TelemetryStream } from './components/Telemetry'
-import { Header, ModelConfigPanel } from './components/Header'
+import { Header } from './components/Header'
 import { SkillProposal } from './components/Skills'
 
 export default function App() {
@@ -34,7 +34,6 @@ export default function App() {
   return (
     <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col">
       <Header />
-      <ModelConfigPanel />
       <PipelineVisualization />
       <Dashboard />
 

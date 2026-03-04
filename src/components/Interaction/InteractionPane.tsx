@@ -44,22 +44,65 @@ export function InteractionPane() {
     rejectInteraction(dispatch)
   }
 
+  const handlePreset = async (presetInput: string) => {
+    if (processing) return
+    setProcessing(true)
+    try {
+      await processInteraction(presetInput, state, dispatch)
+    } finally {
+      setProcessing(false)
+    }
+  }
+
   return (
     <div className="flex-1 border-r border-slate-700 flex flex-col">
       {/* Interaction List */}
       <div className="flex-1 p-6 overflow-y-auto scrollbar-thin">
         {state.interactions.length === 0 ? (
-          <div className="text-center text-slate-500 py-12">
-            <p className="text-lg mb-2">Welcome to the Pattern Playground</p>
-            <p className="text-sm">
+          <div className="text-center py-12">
+            <p className="text-xl font-semibold text-white mb-2">Welcome to the Pattern Playground</p>
+            <p className="text-sm text-slate-400 mb-8">
               {tutorial.active
                 ? 'Follow the tutorial to experience the Autonomaton pattern.'
-                : 'Type a request below to begin.'}
+                : 'Click any button to see the pattern in action.'}
             </p>
-            <div className="mt-6 text-xs text-slate-600 space-y-1">
-              <p>Try: "capture my idea about project architecture"</p>
-              <p>Try: "research best practices for API design"</p>
-              <p>Try: "delete all user data" (red zone demo)</p>
+            <div className="flex flex-col gap-3 max-w-md mx-auto">
+              <button
+                onClick={() => handlePreset('capture my idea about project architecture')}
+                disabled={processing}
+                className="flex items-center gap-3 px-4 py-3 bg-slate-800/80 hover:bg-slate-700/80 border border-zone-green/30 hover:border-zone-green rounded-lg text-left transition-all group disabled:opacity-50"
+              >
+                <span className="w-3 h-3 rounded-full bg-zone-green shadow-[0_0_8px_var(--zone-green)]" />
+                <div className="flex-1">
+                  <div className="text-white font-medium text-sm group-hover:text-zone-green transition-colors">Capture a quick thought</div>
+                  <div className="text-xs text-slate-500">Auto-executes (Green Zone)</div>
+                </div>
+                <span className="text-slate-600 text-xs">T1</span>
+              </button>
+              <button
+                onClick={() => handlePreset('research best practices for API design')}
+                disabled={processing}
+                className="flex items-center gap-3 px-4 py-3 bg-slate-800/80 hover:bg-slate-700/80 border border-zone-yellow/30 hover:border-zone-yellow rounded-lg text-left transition-all group disabled:opacity-50"
+              >
+                <span className="w-3 h-3 rounded-full bg-zone-yellow shadow-[0_0_8px_var(--zone-yellow)]" />
+                <div className="flex-1">
+                  <div className="text-white font-medium text-sm group-hover:text-zone-yellow transition-colors">Deep dive on API design</div>
+                  <div className="text-xs text-slate-500">Requires Approval (Yellow Zone)</div>
+                </div>
+                <span className="text-slate-600 text-xs">T2</span>
+              </button>
+              <button
+                onClick={() => handlePreset('delete all user data')}
+                disabled={processing}
+                className="flex items-center gap-3 px-4 py-3 bg-slate-800/80 hover:bg-slate-700/80 border border-zone-red/30 hover:border-zone-red rounded-lg text-left transition-all group disabled:opacity-50"
+              >
+                <span className="w-3 h-3 rounded-full bg-zone-red shadow-[0_0_8px_var(--zone-red)]" />
+                <div className="flex-1">
+                  <div className="text-white font-medium text-sm group-hover:text-zone-red transition-colors">Delete all user data</div>
+                  <div className="text-xs text-slate-500">Info Only (Red Zone)</div>
+                </div>
+                <span className="text-slate-600 text-xs">T3</span>
+              </button>
             </div>
           </div>
         ) : (
