@@ -13,6 +13,28 @@
  * - Animations feel satisfying, not decorative
  */
 
+/* =============================================================================
+ * YAML SYNTAX HIGHLIGHTING THEME
+ * ============================================================================= */
+
+:root {
+  /* Editor Base */
+  --bg-editor: #0D0F12;
+  --text-base: #8492A6;
+  --text-comment: #4B5563;
+
+  /* YAML Syntax */
+  --yaml-key: #38BDF8;        /* Cyan - structural keys */
+  --yaml-number: #C084FC;     /* Purple - numbers/costs */
+  --yaml-string: #FCD34D;     /* Amber - string values */
+  --yaml-boolean: #F472B6;    /* Pink - true/false */
+
+  /* Governance Zones (syntax) */
+  --yaml-zone-green: #10B981;
+  --yaml-zone-yellow: #F59E0B;
+  --yaml-zone-red: #EF4444;
+}
+
 @layer base {
   body {
     @apply bg-slate-900 text-slate-100 font-sans antialiased;
@@ -83,6 +105,100 @@
     @apply border border-slate-700 focus:border-blue-500 focus:outline-none;
     @apply resize-none;
     tab-size: 2;
+  }
+
+  /* Syntax-highlighted YAML viewer (read-only) */
+  .yaml-viewer {
+    @apply font-mono text-sm bg-slate-950 p-4 rounded-lg;
+    @apply border border-slate-700;
+    background: var(--bg-editor);
+    tab-size: 2;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  /* Syntax-highlighted YAML editor (editable) - container */
+  .yaml-editor-container {
+    @apply w-full rounded-lg;
+    @apply border border-slate-700;
+    background: var(--bg-editor);
+    min-height: 300px;
+    display: grid;
+    /* Both children occupy same grid cell = overlap */
+  }
+
+  /* Syntax-highlighted YAML editor - backdrop layer */
+  .yaml-editor-backdrop {
+    @apply font-mono text-sm p-4 pointer-events-none;
+    grid-area: 1 / 1;
+    tab-size: 2;
+    white-space: pre-wrap;
+    word-break: break-word;
+    line-height: 1.5;
+    overflow: hidden;
+  }
+
+  /* Syntax-highlighted YAML editor - input layer */
+  .yaml-editor-input {
+    @apply font-mono text-sm p-4 resize-none;
+    @apply focus:outline-none;
+    grid-area: 1 / 1;
+    background: transparent;
+    color: transparent;
+    caret-color: theme('colors.blue.400');
+    tab-size: 2;
+    white-space: pre-wrap;
+    word-break: break-word;
+    line-height: 1.5;
+    border: none;
+    min-height: 300px;
+  }
+
+  .yaml-editor-container:focus-within {
+    @apply border-blue-500;
+  }
+
+  .yaml-editor-input::selection {
+    background: theme('colors.blue.500 / 30%');
+  }
+
+  /* YAML syntax elements */
+  .yaml-key {
+    color: var(--yaml-key);
+  }
+
+  .yaml-number {
+    color: var(--yaml-number);
+  }
+
+  .yaml-string {
+    color: var(--yaml-string);
+  }
+
+  .yaml-boolean {
+    color: var(--yaml-boolean);
+    font-style: italic;
+  }
+
+  .yaml-comment {
+    color: var(--text-comment);
+    font-style: italic;
+  }
+
+  /* Governance zone keywords in YAML */
+  .yaml-zone-green {
+    color: var(--yaml-zone-green);
+    font-weight: 600;
+  }
+
+  .yaml-zone-yellow {
+    color: var(--yaml-zone-yellow);
+    font-weight: 600;
+  }
+
+  .yaml-zone-red {
+    color: var(--yaml-zone-red);
+    font-weight: 600;
   }
 
   /* Telemetry entry */

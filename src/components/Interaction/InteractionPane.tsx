@@ -3,11 +3,49 @@
  *
  * This is where users type requests and see responses.
  * Each interaction shows: tier, zone, cost, and the system response.
+ *
+ * v0.3 Additions:
+ * - Pattern tracking badge ("👀 Observed N/3")
+ * - Run Again button on completed interactions
+ * - Persistent Prompt Tray above input
  */
 
 import { useState } from 'react'
 import { useApp, useTutorial, usePendingApproval } from '../../state/context'
 import { processInteraction, continueAfterApproval, rejectInteraction } from '../../services'
+import type { Interaction } from '../../state/types'
+
+// Preset prompts for the tray
+const PRESETS = [
+  {
+    label: 'Capture thought',
+    input: 'capture my idea about project architecture',
+    zone: 'green' as const,
+    tier: 1,
+    intent: 'capture_idea',
+  },
+  {
+    label: 'Research topic',
+    input: 'research best practices for API design',
+    zone: 'yellow' as const,
+    tier: 2,
+    intent: 'research_topic',
+  },
+  {
+    label: 'Draft email',
+    input: 'draft an email to the team about the project',
+    zone: 'yellow' as const,
+    tier: 2,
+    intent: 'draft_email',
+  },
+  {
+    label: 'Delete data',
+    input: 'delete all user data',
+    zone: 'red' as const,
+    tier: 3,
+    intent: 'delete_data',
+  },
+]
 
 export function InteractionPane() {
   const [input, setInput] = useState('')
@@ -54,6 +92,15 @@ export function InteractionPane() {
     }
   }
 
+  const handleRunAgain = async (interaction: Interaction) => {
+    if (processing) return
+    await handlePreset(interaction.input)
+  }
+
+  // Check if an intent has an approved skill
+  const hasSkill = (intent: string) =>
+    state.skills.some((s) => s.intentMatch === intent)
+
   return (
     <div className="flex-1 border-r border-slate-700 flex flex-col">
       {/* Interaction List */}
@@ -66,6 +113,7 @@ export function InteractionPane() {
                 ? 'Follow the tutorial to experience the Autonomaton pattern.'
                 : 'Click any button to see the pattern in action.'}
             </p>
+            {/* Empty state preset buttons (larger format) */}
             <div className="flex flex-col gap-3 max-w-md mx-auto">
               <button
                 onClick={() => handlePreset('capture my idea about project architecture')}
@@ -108,64 +156,14 @@ export function InteractionPane() {
         ) : (
           <div className="space-y-4">
             {state.interactions.map((interaction) => (
-              <div
+              <InteractionCard
                 key={interaction.id}
-                className={`
-                  bg-slate-800/50 rounded-lg p-4 border-l-4 transition-all
-                  ${interaction.zone === 'green' ? 'border-zone-green' : ''}
-                  ${interaction.zone === 'yellow' ? 'border-zone-yellow' : ''}
-                  ${interaction.zone === 'red' ? 'border-zone-red' : ''}
-                  ${interaction.status === 'pending' ? 'opacity-70' : ''}
-                  ${state.selectedInteractionId === interaction.id ? 'ring-2 ring-blue-500' : ''}
-                `}
-              >
-                {/* User Input */}
-                <div className="text-sm text-slate-400 mb-2 flex items-center gap-2">
-                  <span className="text-slate-500">›</span>
-                  {interaction.input}
-                </div>
-
-                {/* Metadata Badges */}
-                <div className="flex items-center gap-3 text-xs mb-3">
-                  <span className={`tier-${interaction.tier} px-2 py-0.5 rounded border`}>
-                    T{interaction.tier}: {interaction.tier === 0 ? 'Cached' : interaction.tier === 1 ? 'Cheap' : interaction.tier === 2 ? 'Premium' : 'Apex'}
-                  </span>
-                  <span className={`zone-${interaction.zone} px-2 py-0.5 rounded border capitalize`}>
-                    {interaction.zone}
-                  </span>
-                  <span className="text-slate-500">
-                    ${interaction.cost.toFixed(4)}
-                  </span>
-                  {interaction.skillMatch && (
-                    <span className="text-tier-0 px-2 py-0.5 rounded border border-tier-0">
-                      ⚡ Skill
-                    </span>
-                  )}
-                  {interaction.sovereignty === 'local' && (
-                    <span className="text-green-400 text-xs">🏠 Local</span>
-                  )}
-                </div>
-
-                {/* Response */}
-                {interaction.response && (
-                  <div className="text-sm text-slate-300 whitespace-pre-wrap bg-slate-900/50 rounded p-3">
-                    {interaction.response}
-                  </div>
-                )}
-
-                {/* Status indicator */}
-                {interaction.status === 'pending' && (
-                  <div className="text-xs text-slate-500 mt-2 flex items-center gap-2">
-                    <span className="animate-pulse">●</span>
-                    Processing...
-                  </div>
-                )}
-                {interaction.status === 'rejected' && (
-                  <div className="text-xs text-red-400 mt-2">
-                    ✗ Rejected by user
-                  </div>
-                )}
-              </div>
+                interaction={interaction}
+                isSelected={state.selectedInteractionId === interaction.id}
+                hasSkill={hasSkill(interaction.intent)}
+                onRunAgain={() => handleRunAgain(interaction)}
+                processing={processing}
+              />
             ))}
           </div>
         )}
@@ -205,6 +203,16 @@ export function InteractionPane() {
         )}
       </div>
 
+      {/* Prompt Tray — Always visible above input */}
+      {state.interactions.length > 0 && (
+        <PromptTray
+          presets={PRESETS}
+          skills={state.skills}
+          onSelect={handlePreset}
+          disabled={processing || !!pendingApproval}
+        />
+      )}
+
       {/* Input Area */}
       <form onSubmit={handleSubmit} className="border-t border-slate-700 p-4">
         <div className="flex gap-2">
@@ -225,6 +233,189 @@ export function InteractionPane() {
           </button>
         </div>
       </form>
+    </div>
+  )
+}
+
+// =============================================================================
+// INTERACTION CARD
+// =============================================================================
+
+interface InteractionCardProps {
+  interaction: Interaction
+  isSelected: boolean
+  hasSkill: boolean
+  onRunAgain: () => void
+  processing: boolean
+}
+
+function InteractionCard({ interaction, isSelected, hasSkill, onRunAgain, processing }: InteractionCardProps) {
+  return (
+    <div
+      className={`
+        relative bg-slate-800/50 rounded-lg p-4 border-l-4 transition-all group
+        ${interaction.zone === 'green' ? 'border-zone-green' : ''}
+        ${interaction.zone === 'yellow' ? 'border-zone-yellow' : ''}
+        ${interaction.zone === 'red' ? 'border-zone-red' : ''}
+        ${interaction.status === 'pending' ? 'opacity-70' : ''}
+        ${isSelected ? 'ring-2 ring-blue-500' : ''}
+      `}
+    >
+      {/* Run Again Button */}
+      {interaction.status === 'completed' && (
+        <button
+          onClick={onRunAgain}
+          disabled={processing}
+          title="Run again"
+          className="absolute top-3 right-3 p-1.5 text-slate-500 hover:text-white hover:bg-slate-700 rounded transition-all opacity-0 group-hover:opacity-100 disabled:opacity-50"
+        >
+          🔁
+        </button>
+      )}
+
+      {/* User Input */}
+      <div className="text-sm text-slate-400 mb-2 flex items-center gap-2">
+        <span className="text-slate-500">›</span>
+        {interaction.input}
+      </div>
+
+      {/* Metadata Badges */}
+      <div className="flex items-center gap-3 text-xs mb-3 flex-wrap">
+        <span className={`tier-${interaction.tier} px-2 py-0.5 rounded border`}>
+          T{interaction.tier}: {interaction.tier === 0 ? 'Cached' : interaction.tier === 1 ? 'Cheap' : interaction.tier === 2 ? 'Premium' : 'Apex'}
+        </span>
+        <span className={`zone-${interaction.zone} px-2 py-0.5 rounded border capitalize`}>
+          {interaction.zone}
+        </span>
+        <span className="text-slate-500">
+          ${interaction.cost.toFixed(4)}
+        </span>
+        {interaction.skillMatch && (
+          <span className="text-tier-0 px-2 py-0.5 rounded border border-tier-0">
+            ⚡ Skill
+          </span>
+        )}
+        {interaction.sovereignty === 'local' && (
+          <span className="text-green-400 text-xs">🏠 Local</span>
+        )}
+
+        {/* Pattern Tracking Badge */}
+        <PatternBadge interaction={interaction} hasSkill={hasSkill} />
+      </div>
+
+      {/* Response */}
+      {interaction.response && (
+        <div className="text-sm text-slate-300 whitespace-pre-wrap bg-slate-900/50 rounded p-3">
+          {interaction.response}
+        </div>
+      )}
+
+      {/* Status indicator */}
+      {interaction.status === 'pending' && (
+        <div className="text-xs text-slate-500 mt-2 flex items-center gap-2">
+          <span className="animate-pulse">●</span>
+          Processing...
+        </div>
+      )}
+      {interaction.status === 'rejected' && (
+        <div className="text-xs text-red-400 mt-2">
+          ✗ Rejected by user
+        </div>
+      )}
+    </div>
+  )
+}
+
+// =============================================================================
+// PATTERN BADGE
+// =============================================================================
+
+interface PatternBadgeProps {
+  interaction: Interaction
+  hasSkill: boolean
+}
+
+function PatternBadge({ interaction, hasSkill }: PatternBadgeProps) {
+  const count = interaction.patternCountAtCreation
+
+  // If this intent now has a skill, show "Cached Skill"
+  if (hasSkill && !interaction.skillMatch) {
+    return (
+      <span className="text-tier-0 px-2 py-0.5 rounded border border-tier-0 animate-pulse">
+        ⚡ Cached Skill
+      </span>
+    )
+  }
+
+  // If there's no pattern count, or it's a skill match, don't show anything
+  if (!count || interaction.skillMatch) return null
+
+  // Show the observation count
+  if (count >= 3) {
+    return (
+      <span className="text-amber-400 px-2 py-0.5 rounded border border-amber-500/50 animate-pulse">
+        ⚡ Skill Proposed!
+      </span>
+    )
+  }
+
+  return (
+    <span className="text-slate-400 px-2 py-0.5 rounded border border-slate-600">
+      👀 Observed ({count}/3)
+    </span>
+  )
+}
+
+// =============================================================================
+// PROMPT TRAY
+// =============================================================================
+
+interface PromptTrayProps {
+  presets: typeof PRESETS
+  skills: { intentMatch: string }[]
+  onSelect: (input: string) => void
+  disabled: boolean
+}
+
+function PromptTray({ presets, skills, onSelect, disabled }: PromptTrayProps) {
+  const hasSkill = (intent: string) =>
+    skills.some((s) => s.intentMatch === intent)
+
+  return (
+    <div className="border-t border-slate-700/50 px-4 py-2 bg-slate-900/50">
+      <div className="flex gap-2 overflow-x-auto scrollbar-thin pb-1">
+        {presets.map((preset) => {
+          const skilled = hasSkill(preset.intent)
+          return (
+            <button
+              key={preset.intent}
+              onClick={() => onSelect(preset.input)}
+              disabled={disabled}
+              className={`
+                flex items-center gap-2 px-3 py-1.5 rounded-full text-xs whitespace-nowrap
+                transition-all disabled:opacity-50
+                ${skilled
+                  ? 'bg-tier-0/10 border border-tier-0/50 text-tier-0 hover:bg-tier-0/20'
+                  : `bg-slate-800 border border-zone-${preset.zone}/30 text-slate-300 hover:border-zone-${preset.zone} hover:text-white`
+                }
+              `}
+            >
+              <span
+                className={`w-2 h-2 rounded-full ${
+                  skilled
+                    ? 'bg-tier-0 shadow-[0_0_6px_var(--tier-0)]'
+                    : `bg-zone-${preset.zone} shadow-[0_0_4px_var(--zone-${preset.zone})]`
+                }`}
+              />
+              {skilled && <span>⚡</span>}
+              {preset.label}
+              <span className="text-slate-500">
+                {skilled ? 'T0' : `T${preset.tier}`}
+              </span>
+            </button>
+          )
+        })}
+      </div>
     </div>
   )
 }

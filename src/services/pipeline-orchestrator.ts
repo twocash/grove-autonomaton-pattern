@@ -95,6 +95,13 @@ export async function processInteraction(
     return
   }
 
+  // Calculate pattern count BEFORE creating interaction (for badge display)
+  // Only count if it's a valid intent and not already a cached skill
+  const willIncrementPattern = decision.intent !== 'unknown' && !decision.skillMatch
+  const patternCountAtCreation = willIncrementPattern
+    ? (state.patternCounts[decision.intent] || 0) + 1
+    : undefined
+
   // Create the interaction record
   const interaction: Interaction = {
     id: interactionId,
@@ -110,16 +117,17 @@ export async function processInteraction(
     status: 'pending',
     skillMatch: decision.skillMatch?.id || null,
     mode: state.mode,
+    patternCountAtCreation,
   }
 
   dispatch({ type: 'ADD_INTERACTION', interaction })
 
   // Track pattern for skill flywheel
-  if (decision.intent !== 'unknown' && !decision.skillMatch) {
+  if (willIncrementPattern) {
     dispatch({ type: 'INCREMENT_PATTERN', intent: decision.intent })
 
     // Check if we should propose a skill
-    const newCount = (state.patternCounts[decision.intent] || 0) + 1
+    const newCount = patternCountAtCreation!
     if (shouldProposeSkill(decision.intent, { ...state.patternCounts, [decision.intent]: newCount }, state.skills)) {
       dispatch({
         type: 'PROPOSE_SKILL',

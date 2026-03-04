@@ -12,14 +12,38 @@
  * - zones.schema: Zone governance definitions
  * - models.config: Tier-to-model mappings (proves Claim #8)
  * - skills.library: Approved cached patterns
+ *
+ * v0.3: Added YAML syntax highlighting for visual clarity
  */
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { useRoutingConfig, useZonesSchema, useAppDispatch, useAppState, useSkills } from '../../state/context'
 import { serializeRoutingConfig, parseRoutingConfig } from '../../config/routing'
 import { serializeZonesSchema } from '../../config/zones'
 import { serializeModelsConfig, parseModelsConfig } from '../../config/models'
 import { serializeSkills } from '../../config/skills'
+
+/**
+ * Applies syntax highlighting to YAML text
+ */
+function highlightYaml(text: string): string {
+  return text
+    // Comments first (preserves them from other replacements)
+    .replace(/(#.*)$/gm, '<span class="yaml-comment">$1</span>')
+    // Zone keywords (governance colors)
+    .replace(/\b(green)\b/g, '<span class="yaml-zone-green">$1</span>')
+    .replace(/\b(yellow)\b/g, '<span class="yaml-zone-yellow">$1</span>')
+    .replace(/\b(red)\b/g, '<span class="yaml-zone-red">$1</span>')
+    // Booleans
+    .replace(/\b(true|false)\b/g, '<span class="yaml-boolean">$1</span>')
+    // Numbers (including decimals)
+    .replace(/:\s*(\d+\.?\d*)\b/g, ': <span class="yaml-number">$1</span>')
+    // Strings in quotes
+    .replace(/"([^"]*)"/g, '"<span class="yaml-string">$1</span>"')
+    .replace(/'([^']*)'/g, "'<span class=\"yaml-string\">$1</span>'")
+    // Keys (word followed by colon)
+    .replace(/^(\s*)(\w[\w\s]*):/gm, '$1<span class="yaml-key">$2</span>:')
+}
 
 type Tab = 'routing' | 'zones' | 'models' | 'skills'
 
@@ -35,9 +59,11 @@ export function ConfigEditor() {
   const { configRipple, skillProposal } = state
 
   const [routingText, setRoutingText] = useState(serializeRoutingConfig(routingConfig))
-  const [zonesText, setZonesText] = useState(serializeZonesSchema(zonesSchema))
   const [modelsText, setModelsText] = useState(serializeModelsConfig(state))
   const [skillsText, setSkillsText] = useState(serializeSkills(skills))
+
+  // Zones is read-only, computed directly
+  const zonesText = useMemo(() => serializeZonesSchema(zonesSchema), [zonesSchema])
 
   // Update skills text when skills change
   useEffect(() => {
@@ -140,37 +166,22 @@ export function ConfigEditor() {
         ${!hasEdited && isEditable ? 'animate-pulse-border' : ''}
       `}>
         {activeTab === 'routing' && (
-          <textarea
+          <SyntaxHighlightedEditor
             value={routingText}
-            onChange={(e) => handleRoutingChange(e.target.value)}
-            className="config-editor w-full h-full min-h-[300px]"
-            spellCheck={false}
+            onChange={handleRoutingChange}
           />
         )}
         {activeTab === 'zones' && (
-          <textarea
-            value={zonesText}
-            onChange={(e) => setZonesText(e.target.value)}
-            className="config-editor w-full h-full min-h-[300px]"
-            spellCheck={false}
-            readOnly
-          />
+          <SyntaxHighlightedYaml text={zonesText} />
         )}
         {activeTab === 'models' && (
-          <textarea
+          <SyntaxHighlightedEditor
             value={modelsText}
-            onChange={(e) => handleModelsChange(e.target.value)}
-            className="config-editor w-full h-full min-h-[300px]"
-            spellCheck={false}
+            onChange={handleModelsChange}
           />
         )}
         {activeTab === 'skills' && (
-          <textarea
-            value={skillsText}
-            className="config-editor w-full h-full min-h-[300px]"
-            spellCheck={false}
-            readOnly
-          />
+          <SyntaxHighlightedYaml text={skillsText} />
         )}
       </div>
 
@@ -242,5 +253,65 @@ function TabButton({ label, active, onClick, highlight, badge }: TabButtonProps)
         </span>
       )}
     </button>
+  )
+}
+
+// =============================================================================
+// SYNTAX HIGHLIGHTED YAML (Read-only)
+// =============================================================================
+
+interface SyntaxHighlightedYamlProps {
+  text: string
+}
+
+function SyntaxHighlightedYaml({ text }: SyntaxHighlightedYamlProps) {
+  const highlightedHtml = useMemo(() => highlightYaml(text), [text])
+
+  return (
+    <div
+      className="yaml-viewer w-full min-h-[300px] overflow-auto"
+      dangerouslySetInnerHTML={{ __html: highlightedHtml }}
+    />
+  )
+}
+
+// =============================================================================
+// SYNTAX HIGHLIGHTED EDITOR (Editable)
+// =============================================================================
+
+interface SyntaxHighlightedEditorProps {
+  value: string
+  onChange: (value: string) => void
+}
+
+function SyntaxHighlightedEditor({ value, onChange }: SyntaxHighlightedEditorProps) {
+  const highlightedHtml = useMemo(() => highlightYaml(value), [value])
+  const backdropRef = useRef<HTMLDivElement>(null)
+
+  const handleScroll = (e: React.UIEvent<HTMLTextAreaElement>) => {
+    if (backdropRef.current) {
+      backdropRef.current.scrollTop = e.currentTarget.scrollTop
+      backdropRef.current.scrollLeft = e.currentTarget.scrollLeft
+    }
+  }
+
+  return (
+    <div className="yaml-editor-container">
+      {/* Syntax highlighted backdrop */}
+      <div
+        ref={backdropRef}
+        className="yaml-editor-backdrop"
+        dangerouslySetInnerHTML={{ __html: highlightedHtml + '\n' }}
+        aria-hidden="true"
+      />
+      {/* Transparent textarea for editing */}
+      <textarea
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        onScroll={handleScroll}
+        className="yaml-editor-input"
+        spellCheck={false}
+      />
+    </div>
   )
 }
