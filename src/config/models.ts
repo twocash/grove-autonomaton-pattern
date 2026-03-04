@@ -84,6 +84,7 @@ export function parseModelsConfig(text: string): { modelConfig: AppState['modelC
     const lines = text.split('\n')
     let currentTier: 1 | 2 | 3 | null = null
     const config: AppState['modelConfig'] = {
+      tier0: { provider: 'local_memory', apiKey: null, model: 'cached_skill' },
       tier1: { provider: 'anthropic', apiKey: null, model: 'claude-3-haiku' },
       tier2: { provider: 'anthropic', apiKey: null, model: 'claude-sonnet-4' },
       tier3: { provider: 'anthropic', apiKey: null, model: 'claude-opus-4' },

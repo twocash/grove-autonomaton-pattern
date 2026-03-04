@@ -210,7 +210,9 @@ export interface AppState {
   mode: Mode
 
   // Model configuration (Interactive mode)
+  // Tier 0 uses local_memory provider (cached skills, no API call)
   modelConfig: {
+    tier0: ModelConfig
     tier1: ModelConfig
     tier2: ModelConfig
     tier3: ModelConfig

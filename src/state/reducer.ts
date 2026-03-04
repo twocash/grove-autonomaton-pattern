@@ -17,6 +17,7 @@ export const initialState: AppState = {
   mode: 'demo',
 
   modelConfig: {
+    tier0: { provider: 'local_memory', apiKey: null, model: 'cached_skill' },
     tier1: { provider: 'anthropic', apiKey: null, model: 'claude-3-haiku' },
     tier2: { provider: 'anthropic', apiKey: null, model: 'claude-sonnet-4' },
     tier3: { provider: 'anthropic', apiKey: null, model: 'claude-opus-4' },
@@ -109,9 +110,10 @@ export function appReducer(state: AppState, action: AppAction): AppState {
       return {
         ...state,
         mode: action.mode,
-        // Clear API keys when switching to demo mode
+        // Clear API keys when switching to demo mode (tier0 has no key)
         modelConfig: action.mode === 'demo'
           ? {
+              tier0: state.modelConfig.tier0, // local_memory, no key
               tier1: { ...state.modelConfig.tier1, apiKey: null },
               tier2: { ...state.modelConfig.tier2, apiKey: null },
               tier3: { ...state.modelConfig.tier3, apiKey: null },
@@ -135,6 +137,7 @@ export function appReducer(state: AppState, action: AppAction): AppState {
       return {
         ...state,
         modelConfig: {
+          tier0: state.modelConfig.tier0, // local_memory, immutable
           tier1: { ...state.modelConfig.tier1, ...action.config },
           tier2: { ...state.modelConfig.tier2, ...action.config },
           tier3: { ...state.modelConfig.tier3, ...action.config },

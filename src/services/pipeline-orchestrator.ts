@@ -206,46 +206,39 @@ export async function completeExecution(
     const executionLatency = TIER_CONFIG[decision.tier].latencyMs
     await delay(executionLatency)
   } else {
-    // Interactive mode: live API calls via CognitiveAdapter
+    // Interactive mode: all tiers flow through CognitiveAdapter
+    // Tier 0 uses local_memory provider, Tiers 1-3 use configured LLM providers
+    const tierKey = `tier${decision.tier}` as keyof typeof state.modelConfig
+    const tierConfig = state.modelConfig[tierKey]
+    modelUsed = tierConfig.model
 
-    // Tier 0 (cached skills) uses local execution, no API call needed
-    if (decision.tier === 0) {
-      response = `[Cached Skill]: ${decision.skillMatch?.pattern || 'Automated response'}`
-      modelUsed = 'local_memory'
-      tokensIn = 0
-      tokensOut = 0
-    } else {
-      // Tiers 1-3: live API calls
-      const tierKey = `tier${decision.tier}` as 'tier1' | 'tier2' | 'tier3'
-      const tierConfig = state.modelConfig[tierKey]
-      modelUsed = tierConfig.model
-
-      // Set executing status (shows "Awaiting Tier N Cognition..." in UI)
+    // Set executing status for cloud tiers (Tier 0 is instant)
+    if (decision.tier > 0) {
       dispatch({
         type: 'UPDATE_INTERACTION_STATUS',
         id: interaction.id,
         status: 'executing',
       })
+    }
 
-      try {
-        const result = await executeCognitiveRequest(interaction.input, tierConfig)
-        response = result.text
-        tokensIn = result.tokensIn
-        tokensOut = result.tokensOut
-      } catch (error) {
-        // Jidoka: halt pipeline with provider error
-        const message = error instanceof Error ? error.message : String(error)
-        dispatch({
-          type: 'HALT_PIPELINE',
-          reason: {
-            stage: 'execution',
-            error: message,
-            expected: 'Valid API response from provider',
-            proposedFix: 'Check API key and network connection in models.config',
-          },
-        })
-        return
-      }
+    try {
+      const result = await executeCognitiveRequest(interaction.input, tierConfig)
+      response = result.text
+      tokensIn = result.tokensIn
+      tokensOut = result.tokensOut
+    } catch (error) {
+      // Jidoka: halt pipeline with provider error
+      const message = error instanceof Error ? error.message : String(error)
+      dispatch({
+        type: 'HALT_PIPELINE',
+        reason: {
+          stage: 'execution',
+          error: message,
+          expected: 'Valid API response from provider',
+          proposedFix: 'Check API key and network connection in models.config',
+        },
+      })
+      return
     }
   }
 
