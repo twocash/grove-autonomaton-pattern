@@ -24,6 +24,7 @@ import { useApp, useTutorial, usePendingApproval, usePipeline, useSkillProposal 
 import { processInteraction, continueAfterApproval, rejectInteraction } from '../../services'
 import { DiagnosticCard } from '../Diagnostic/DiagnosticCard'
 import { SkillProposalCard } from '../Skills'
+import { MessageRenderer } from './MessageRenderer'
 import type { Interaction, FailureType } from '../../state/types'
 
 // Preset prompts for the tray
@@ -419,10 +420,10 @@ function InteractionCard({
         <PatternBadge interaction={interaction} hasSkill={hasSkill} />
       </div>
 
-      {/* Response */}
+      {/* Response — Markdown rendered */}
       {interaction.response && (
-        <div className="text-sm text-grove-text-mid whitespace-pre-wrap bg-grove-bg/50 p-3">
-          {interaction.response}
+        <div className="text-sm bg-grove-bg/50 p-3">
+          <MessageRenderer content={interaction.response} />
         </div>
       )}
 

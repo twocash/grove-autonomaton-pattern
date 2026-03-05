@@ -82,16 +82,17 @@ export function classifyIntent(
     }
   }
 
-  // Phase 3: Unknown intent — route to Tier 2 for general handling
+  // Phase 3: Ad-hoc query — route to Tier 2 for general handling
+  // This is a governed fallback (yellow zone, flywheel eligible)
   return {
-    intent: 'unknown',
+    intent: 'ad_hoc_query',
     tier: 2,
     zone: 'yellow',
     confidence: 0.3,
     cost: TIER_CONFIG[2].cost,
     sovereignty: TIER_CONFIG[2].sovereignty,
     skillMatch: null,
-    reasoning: 'No intent match — routing to Tier 2 for general handling',
+    reasoning: 'No intent match — routing as ad-hoc query',
   }
 }
 

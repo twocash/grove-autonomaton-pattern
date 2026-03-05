@@ -78,6 +78,16 @@ export const defaultRoutingConfig: RoutingConfig = {
       description: 'Destructive data operation',
       keywords: ['delete', 'remove', 'destroy', 'wipe', 'erase', 'drop'],
     },
+
+    // =========================================================================
+    // FALLBACK — Unmapped custom prompts
+    // =========================================================================
+    ad_hoc_query: {
+      tier: 2,
+      zone: 'yellow',
+      description: 'Unmapped custom user prompt',
+      keywords: [],  // No keywords — this is the fallback
+    },
   },
 }
 

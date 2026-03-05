@@ -162,15 +162,20 @@ This action is in the **RED ZONE** — human-only.
 *This is a guardrail, not a limitation. Destructive actions require human judgment.*`
   },
 
-  unknown: (input: string) => {
+  ad_hoc_query: (input: string) => {
     return `I understood your request: "${input}"
 
-However, I couldn't match it to a specific intent in my routing configuration.
+This is a custom query that doesn't match a specific intent in my routing configuration.
+
+**What happens now:**
+• Routed to Tier 2 for general handling
+• Yellow zone: supervised execution
+• Flywheel-eligible: may become a skill if pattern recurs
 
 **Options:**
-1. Rephrase with clearer keywords
-2. Check the routing.config for available intents
-3. This might be a new pattern — consider proposing a skill
+1. Proceed with this ad-hoc request
+2. Check the routing.config to add as a formal intent
+3. If this recurs, I'll propose creating a skill
 
 *Tip: Common intents include capturing ideas, summarizing notes, drafting emails, and research.*`
   },
@@ -180,7 +185,7 @@ However, I couldn't match it to a specific intent in my routing configuration.
  * Get a simulated response for an intent
  */
 export function getSimulatedResponse(intent: string, input: string): string {
-  const responder = RESPONSES[intent] || RESPONSES.unknown
+  const responder = RESPONSES[intent] || RESPONSES.ad_hoc_query
   return responder(input)
 }
 

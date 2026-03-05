@@ -116,8 +116,8 @@ export async function processInteraction(
   }
 
   // Calculate pattern count BEFORE creating interaction (for badge display)
-  // Only count if it's a valid intent and not already a cached skill
-  const willIncrementPattern = decision.intent !== 'unknown' && !decision.skillMatch
+  // Only count if it's a named intent (not ad-hoc fallback) and not already a cached skill
+  const willIncrementPattern = decision.intent !== 'ad_hoc_query' && !decision.skillMatch
   const patternCountAtCreation = willIncrementPattern
     ? (state.patternCounts[decision.intent] || 0) + 1
     : undefined
