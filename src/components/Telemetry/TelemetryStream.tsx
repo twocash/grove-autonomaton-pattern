@@ -106,8 +106,25 @@ test('Intent "${entry.intent}" routes to T${entry.tier} and triggers ${entry.zon
           </div>
         ) : (
           <div className="space-y-1">
-            {telemetry.map((entry) => {
-              // Resolve model name from tier (modelConfig uses tier0/tier1/tier2/tier3 keys)
+            {/* v0.9.9: Newest entries at top */}
+            {telemetry.slice().reverse().map((entry) => {
+              // v0.9.9: System alerts render as injected notifications, not routing rows
+              if (entry.intent === 'system_alert') {
+                return (
+                  <div
+                    key={entry.id}
+                    className="telemetry-entry"
+                  >
+                    <span className="text-grove-amber font-semibold">{entry.timestamp.slice(11, 19)}</span>
+                    <span className="text-grove-text-dim"> │ </span>
+                    <span className="text-grove-amber animate-pulse">
+                      {entry.message || 'System event'}
+                    </span>
+                  </div>
+                )
+              }
+
+              // Standard routing row
               const tierKey = `tier${entry.tier}` as 'tier0' | 'tier1' | 'tier2' | 'tier3'
               const executionModel = entry.tier === 0
                 ? 'local_cache'
@@ -178,13 +195,6 @@ test('Intent "${entry.intent}" routes to T${entry.tier} and triggers ${entry.zon
                     <>
                       <span className="text-grove-text-dim"> │ </span>
                       <span className="text-tier-0">cached</span>
-                    </>
-                  )}
-                  {/* v0.9.9: System alert messages with amber styling */}
-                  {entry.message && (
-                    <>
-                      <span className="text-grove-text-dim"> │ </span>
-                      <span className="text-grove-amber font-medium animate-pulse">{entry.message}</span>
                     </>
                   )}
                 </div>

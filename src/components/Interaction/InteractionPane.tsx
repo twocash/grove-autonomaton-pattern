@@ -144,7 +144,7 @@ export function InteractionPane() {
                 <span className="w-3 h-3 bg-zone-green shadow-[0_0_8px_var(--zone-green)]" />
                 <div className="flex-1">
                   <div className="text-grove-text font-medium text-sm group-hover:text-zone-green transition-colors">Capture a quick thought</div>
-                  <div className="text-xs text-grove-text-dim">Auto-executes (Green Zone)</div>
+                  <div className="text-xs text-grove-text-dim">Watch an autonomous execution (Green Zone)</div>
                 </div>
                 <span className="text-grove-text-dim text-xs font-mono">T1</span>
               </button>
@@ -156,7 +156,7 @@ export function InteractionPane() {
                 <span className="w-3 h-3 bg-zone-yellow shadow-[0_0_8px_var(--zone-yellow)]" />
                 <div className="flex-1">
                   <div className="text-grove-text font-medium text-sm group-hover:text-zone-yellow transition-colors">Deep dive on API design</div>
-                  <div className="text-xs text-grove-text-dim">Requires Approval (Yellow Zone)</div>
+                  <div className="text-xs text-grove-text-dim">Trigger a human approval gate (Yellow Zone)</div>
                 </div>
                 <span className="text-grove-text-dim text-xs font-mono">T2</span>
               </button>
@@ -168,14 +168,14 @@ export function InteractionPane() {
                 <span className="w-3 h-3 bg-zone-red shadow-[0_0_8px_var(--zone-red)]" />
                 <div className="flex-1">
                   <div className="text-grove-text font-medium text-sm group-hover:text-zone-red transition-colors">Delete all user data</div>
-                  <div className="text-xs text-grove-text-dim">Info Only (Red Zone)</div>
+                  <div className="text-xs text-grove-text-dim">Hit an architectural hard-block (Red Zone)</div>
                 </div>
                 <span className="text-grove-text-dim text-xs font-mono">T3</span>
               </button>
             </div>
 
-            {/* Foundry Cross-Link (v0.8.0) */}
-            <div className="mt-8 pt-6 border-t border-grove-border w-full max-w-md text-center">
+            {/* Foundry Cross-Link (v0.8.0, v0.9.5: centered) */}
+            <div className="mt-8 pt-6 border-t border-grove-border w-full max-w-md mx-auto text-center">
               <p className="font-mono text-xs text-grove-text-dim mb-3">
                 Already understand the pattern?
               </p>
@@ -263,18 +263,14 @@ export function InteractionPane() {
         />
       )}
 
-      {/* v0.9.9: Live Mode Warning — Persistent amber warning when in interactive mode */}
-      {state.mode === 'interactive' && (
-        <div className="border-t border-grove-amber/50 bg-grove-amber/10 px-4 py-2 flex items-center gap-2">
-          <span className="w-2 h-2 bg-grove-amber animate-pulse" />
-          <span className="font-mono text-xs text-grove-amber uppercase tracking-wider">
-            LIVE MODE: API keys required for T2/T3
-          </span>
-        </div>
-      )}
-
       {/* Input Area */}
       <form onSubmit={handleSubmit} className="border-t border-grove-border p-4">
+        {/* v0.9.9: Live Mode Warning — directly above textarea */}
+        {state.mode === 'interactive' && (
+          <div className="font-mono text-[9px] text-grove-amber uppercase mb-2">
+            <span className="animate-pulse">⚡</span> LIVE MODE: API keys required for T2/T3
+          </div>
+        )}
         <div
           className="flex gap-2"
           onClick={() => {
@@ -522,9 +518,13 @@ function PromptTray({ presets, skills, onSelect, disabled, simulateFailure, onFa
     skills.some((s) => s.intentMatch === intent)
 
   return (
-    <div className="border-t border-grove-border/50 px-4 py-2 bg-grove-bg/50">
+    <div className="border-t border-grove-border/50 px-4 py-2 bg-grove-bg/50 mb-4">
       <div className="flex items-center justify-between gap-4">
-        {/* Preset Pills */}
+        {/* v0.9.5: Simulation Control Pad Label — FIXED, does not scroll */}
+        <div className="font-mono text-[10px] text-grove-text-dim uppercase tracking-widest border-r border-grove-border pr-3 flex-shrink-0">
+          Simulate Intent
+        </div>
+        {/* Preset Pills — scrollable */}
         <div className="flex gap-2 overflow-x-auto scrollbar-thin pb-1 flex-1">
           {presets.map((preset) => {
             const skilled = hasSkill(preset.intent)
@@ -575,6 +575,12 @@ function PromptTray({ presets, skills, onSelect, disabled, simulateFailure, onFa
           <option value="low_confidence">Jidoka: Low Confidence</option>
           <option value="hallucination_detected">Jidoka: Hallucination</option>
         </select>
+      </div>
+      {/* v0.9.5: Flywheel Hint — separate row below buttons */}
+      <div className="w-full text-right mt-1">
+        <span className="font-mono text-[9px] text-grove-amber/70 italic">
+          Hint: Execute the same intent 3 times to trigger the Skill Flywheel.
+        </span>
       </div>
     </div>
   )

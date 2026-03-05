@@ -57,7 +57,7 @@ export default function App() {
         <a href="https://the-grove.ai" target="_blank" rel="noopener noreferrer" className="hover:text-grove-text transition-colors">
           The Grove Autonomaton Pattern
         </a>
-        {' '}• CC BY 4.0 • the-grove.ai | <span className="text-grove-green font-semibold">v{APP_VERSION}</span>
+        {' '}• CC BY 4.0 • the-grove.ai | <span className="text-grove-text uppercase">Research Preview</span> <span className="text-grove-green font-semibold">v{APP_VERSION}</span>
       </footer>
 
       {/* Deck overlay (v0.7.1) */}

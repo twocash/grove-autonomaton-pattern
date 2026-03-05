@@ -15,7 +15,49 @@ export function Header() {
   const dispatch = useAppDispatch()
 
   const handleModeToggle = () => {
-    dispatch({ type: 'SET_MODE', mode: mode === 'demo' ? 'interactive' : 'demo' })
+    const newMode = mode === 'demo' ? 'interactive' : 'demo'
+    dispatch({ type: 'SET_MODE', mode: newMode })
+
+    // v0.9.9: Mirror telemetry events for mode transitions
+    if (newMode === 'demo') {
+      // Sandbox restored - switching back to demo mode
+      dispatch({
+        type: 'ADD_TELEMETRY',
+        entry: {
+          id: `system-${Date.now()}`,
+          timestamp: new Date().toISOString(),
+          intent: 'system_alert',
+          tier: 0,
+          zone: 'green',
+          confidence: 1,
+          cost: 0,
+          mode: 'demo',
+          latencyMs: 0,
+          humanFeedback: null,
+          skillMatch: null,
+          message: 'Sandbox restored. Demo Mode active. Live API executions bypassed.',
+        },
+      })
+    } else {
+      // Sandbox breach - switching to interactive mode
+      dispatch({
+        type: 'ADD_TELEMETRY',
+        entry: {
+          id: `system-${Date.now()}`,
+          timestamp: new Date().toISOString(),
+          intent: 'system_alert',
+          tier: 0,
+          zone: 'green',
+          confidence: 1,
+          cost: 0,
+          mode: 'interactive',
+          latencyMs: 0,
+          humanFeedback: null,
+          skillMatch: null,
+          message: 'Sandbox breach: Live Mode activated',
+        },
+      })
+    }
   }
 
   return (
