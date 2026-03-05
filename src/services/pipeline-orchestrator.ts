@@ -96,6 +96,25 @@ export async function processInteraction(
     return
   }
 
+  // v0.9.9: Early Andon Cord — Validate API key at compilation, not execution
+  // This prevents false Yellow Zone approval cards for unconfigured tiers
+  if (state.mode === 'interactive' && decision.tier > 0) {
+    const tierKey = `tier${decision.tier}` as keyof typeof state.modelConfig
+    const tierConfig = state.modelConfig[tierKey]
+    if (!tierConfig.apiKey) {
+      dispatch({
+        type: 'HALT_PIPELINE',
+        reason: {
+          stage: 'compilation',
+          error: `Missing API Key: Tier ${decision.tier} (${tierConfig.model}) requires credentials`,
+          expected: `API key configured in models.config for ${tierConfig.provider || 'provider'}`,
+          proposedFix: `Add API key for ${tierConfig.model} in Config panel, or switch to Demo mode for simulated responses`,
+        },
+      })
+      return
+    }
+  }
+
   // Calculate pattern count BEFORE creating interaction (for badge display)
   // Only count if it's a valid intent and not already a cached skill
   const willIncrementPattern = decision.intent !== 'unknown' && !decision.skillMatch

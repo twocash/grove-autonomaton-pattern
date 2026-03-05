@@ -152,6 +152,8 @@ export interface TelemetryEntry {
   modelUsed?: string
   tokensIn?: number
   tokensOut?: number
+  // v0.9.9: System alerts with human-readable context
+  message?: string
 }
 
 // =============================================================================

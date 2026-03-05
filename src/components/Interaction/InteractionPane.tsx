@@ -263,14 +263,42 @@ export function InteractionPane() {
         />
       )}
 
+      {/* v0.9.9: Live Mode Warning — Persistent amber warning when in interactive mode */}
+      {state.mode === 'interactive' && (
+        <div className="border-t border-grove-amber/50 bg-grove-amber/10 px-4 py-2 flex items-center gap-2">
+          <span className="w-2 h-2 bg-grove-amber animate-pulse" />
+          <span className="font-mono text-xs text-grove-amber uppercase tracking-wider">
+            LIVE MODE: API keys required for T2/T3
+          </span>
+        </div>
+      )}
+
       {/* Input Area */}
       <form onSubmit={handleSubmit} className="border-t border-grove-border p-4">
         <div
           className="flex gap-2"
           onClick={() => {
-            // Auto-wake: clicking anywhere in the input area switches to BYOK mode
+            // v0.9.9: Sandbox breach — dispatch telemetry wake-up call when leaving demo mode
             if (state.mode === 'demo') {
               dispatch({ type: 'SET_MODE', mode: 'interactive' })
+              // Dispatch telemetry entry for sandbox breach event
+              dispatch({
+                type: 'ADD_TELEMETRY',
+                entry: {
+                  id: `system-${Date.now()}`,
+                  timestamp: new Date().toISOString(),
+                  intent: 'system_alert',
+                  tier: 0,
+                  zone: 'green',
+                  confidence: 1,
+                  cost: 0,
+                  mode: 'interactive',
+                  latencyMs: 0,
+                  humanFeedback: null,
+                  skillMatch: null,
+                  message: 'Sandbox breach: Live Mode activated',
+                },
+              })
             }
           }}
         >
@@ -279,9 +307,26 @@ export function InteractionPane() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={() => {
-              // Auto-wake: any keypress also triggers BYOK mode
+              // v0.9.9: Sandbox breach on keypress (same as onClick)
               if (state.mode === 'demo') {
                 dispatch({ type: 'SET_MODE', mode: 'interactive' })
+                dispatch({
+                  type: 'ADD_TELEMETRY',
+                  entry: {
+                    id: `system-${Date.now()}`,
+                    timestamp: new Date().toISOString(),
+                    intent: 'system_alert',
+                    tier: 0,
+                    zone: 'green',
+                    confidence: 1,
+                    cost: 0,
+                    mode: 'interactive',
+                    latencyMs: 0,
+                    humanFeedback: null,
+                    skillMatch: null,
+                    message: 'Sandbox breach: Live Mode activated',
+                  },
+                })
               }
             }}
             placeholder={processing ? 'Processing...' : 'Type your request...'}

@@ -180,6 +180,13 @@ test('Intent "${entry.intent}" routes to T${entry.tier} and triggers ${entry.zon
                       <span className="text-tier-0">cached</span>
                     </>
                   )}
+                  {/* v0.9.9: System alert messages with amber styling */}
+                  {entry.message && (
+                    <>
+                      <span className="text-grove-text-dim"> │ </span>
+                      <span className="text-grove-amber font-medium animate-pulse">{entry.message}</span>
+                    </>
+                  )}
                 </div>
               )
             })}
