@@ -96,6 +96,25 @@ export async function processInteraction(
     return
   }
 
+  // v0.9.9: Early Andon Cord — Validate API key BEFORE approval stage
+  // This prevents false Yellow Zone approval cards when credentials are missing
+  if (state.mode === 'interactive' && decision.tier > 0) {
+    const tierKey = `tier${decision.tier}` as keyof typeof state.modelConfig
+    const tierConfig = state.modelConfig[tierKey]
+    if (!tierConfig.apiKey || tierConfig.apiKey.trim() === '') {
+      dispatch({
+        type: 'HALT_PIPELINE',
+        reason: {
+          stage: 'compilation',
+          error: `Jidoka Halt: Missing API key for Tier ${decision.tier} provider (${tierConfig.model})`,
+          expected: `Valid API key configured for ${tierConfig.provider} in models.config`,
+          proposedFix: 'Update models.config with your API key, or switch to Demo mode to use simulated responses.',
+        },
+      })
+      return
+    }
+  }
+
   // Calculate pattern count BEFORE creating interaction (for badge display)
   // Only count if it's a valid intent and not already a cached skill
   const willIncrementPattern = decision.intent !== 'unknown' && !decision.skillMatch

@@ -88,3 +88,45 @@ vite v6.4.1 building for production...
 
 **Open Issues:**
 - [#1](https://github.com/twocash/grove-autonomaton-example/issues/1) — Add self-healing/self-evolving architecture section to manifesto
+
+---
+
+## v0.9.9 — "Sandbox Breach" UX Polish & Early Andon Cord
+
+### 2026-03-05 — Implementation Session
+
+**Status:** ✅ Complete
+
+### Changes Made
+
+#### 1. Telemetry Wake-Up Call (`InteractionPane.tsx`)
+- Added `ADD_TELEMETRY` dispatch when transitioning from demo → interactive mode
+- Dispatches on both `onClick` (container) and `onFocus` (input)
+- System alert logged: `intent: 'system_alert'` with `tier: 0`, `zone: 'green'`
+- Telemetry stream instantly reacts to sandbox breach
+
+#### 2. Live Mode Warning (`InteractionPane.tsx`)
+- Added persistent amber warning above input area when `mode === 'interactive'`
+- Styling: `font-mono text-[9px] text-grove-amber uppercase tracking-widest`
+- Includes animated pulse emoji: `⚡`
+- Message: "LIVE MODE: API keys required for T2/T3"
+
+#### 3. Early Andon Cord (`pipeline-orchestrator.ts`)
+- **Architectural Fix:** Moved API key validation from Stage 05 (Execution) to Stage 03 (Compilation)
+- Validation occurs AFTER intent classification determines required tier
+- If `mode === 'interactive'` AND `tier > 0` AND API key is missing/empty:
+  - Pipeline halts immediately at `compilation` stage
+  - No false Yellow Zone approval card is shown
+  - Diagnostic: "Jidoka Halt: Missing API key for Tier N provider"
+- Fix guidance: "Update models.config with your API key, or switch to Demo mode"
+
+### Files Modified
+- `src/components/Interaction/InteractionPane.tsx` — Telemetry wake + warning
+- `src/services/pipeline-orchestrator.ts` — Early Andon Cord
+- `src/App.tsx` — Version bump to v0.9.9
+
+### Verification
+- [x] Build compiles without errors
+- [x] Clicking input box logs telemetry entry
+- [x] Amber warning appears in interactive mode
+- [x] Missing API key halts at compilation (not execution)

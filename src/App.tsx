@@ -31,7 +31,7 @@ import { Header } from './components/Header'
 import { DeckOverlay } from './components/Deck'
 
 // App version — update on each release
-const APP_VERSION = '0.9.8'
+const APP_VERSION = '0.9.9'
 
 export default function App() {
   const { currentView } = useAppState()

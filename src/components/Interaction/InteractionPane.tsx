@@ -265,12 +265,34 @@ export function InteractionPane() {
 
       {/* Input Area */}
       <form onSubmit={handleSubmit} className="border-t border-grove-border p-4">
+        {/* v0.9.9: Live Mode Warning */}
+        {state.mode === 'interactive' && (
+          <div className="font-mono text-[9px] text-grove-amber uppercase tracking-widest mb-2 flex items-center gap-2">
+            <span className="animate-pulse">⚡</span> LIVE MODE: API keys required for T2/T3
+          </div>
+        )}
         <div
           className="flex gap-2"
           onClick={() => {
-            // Auto-wake: clicking anywhere in the input area switches to BYOK mode
+            // v0.9.9: Sandbox Breach — dispatch telemetry alert on wake
             if (state.mode === 'demo') {
               dispatch({ type: 'SET_MODE', mode: 'interactive' })
+              dispatch({
+                type: 'ADD_TELEMETRY',
+                entry: {
+                  id: `sys-${Date.now()}`,
+                  timestamp: new Date().toISOString(),
+                  intent: 'system_alert',
+                  tier: 0,
+                  zone: 'green',
+                  confidence: 1,
+                  cost: 0,
+                  mode: 'interactive',
+                  latencyMs: 0,
+                  humanFeedback: null,
+                  skillMatch: null,
+                },
+              })
             }
           }}
         >
@@ -279,9 +301,31 @@ export function InteractionPane() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={() => {
-              // Auto-wake: any keypress also triggers BYOK mode
+              // Auto-wake: any keypress also triggers BYOK mode (silent)
               if (state.mode === 'demo') {
                 dispatch({ type: 'SET_MODE', mode: 'interactive' })
+              }
+            }}
+            onFocus={() => {
+              // v0.9.9: Sandbox Breach — dispatch telemetry alert on focus
+              if (state.mode === 'demo') {
+                dispatch({ type: 'SET_MODE', mode: 'interactive' })
+                dispatch({
+                  type: 'ADD_TELEMETRY',
+                  entry: {
+                    id: `sys-${Date.now()}`,
+                    timestamp: new Date().toISOString(),
+                    intent: 'system_alert',
+                    tier: 0,
+                    zone: 'green',
+                    confidence: 1,
+                    cost: 0,
+                    mode: 'interactive',
+                    latencyMs: 0,
+                    humanFeedback: null,
+                    skillMatch: null,
+                  },
+                })
               }
             }}
             placeholder={processing ? 'Processing...' : 'Type your request...'}
