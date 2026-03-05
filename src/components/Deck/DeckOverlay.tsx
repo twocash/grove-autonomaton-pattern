@@ -62,8 +62,13 @@ export function DeckOverlay() {
     <div className="fixed inset-0 z-50 bg-grove-bg flex font-sans text-grove-text overflow-hidden">
       {/* LEFT NAV */}
       <div className="w-64 flex-none border-r border-grove-border bg-grove-bg2 flex flex-col">
-        <div className="p-6 font-serif text-2xl text-grove-amber border-b border-grove-border">
-          The Pattern
+        <div className="p-6 border-b border-grove-border flex flex-col gap-1">
+          <span className="font-mono text-[10px] text-grove-amber tracking-[0.2em] uppercase">
+            Introducing
+          </span>
+          <span className="font-serif text-2xl text-grove-text leading-tight">
+            The Grove Autonomaton Pattern
+          </span>
         </div>
         <nav className="flex-1 overflow-y-auto p-4 space-y-1 font-mono text-sm">
           {slideMetadata.map((slide: { id: string; title: string }, i: number) => (
@@ -80,29 +85,43 @@ export function DeckOverlay() {
             </button>
           ))}
         </nav>
+
+        {/* LEFT NAV FOOTER — Exit + Legal */}
+        <div className="p-6 border-t border-grove-border flex flex-col gap-5 mt-auto bg-grove-bg2">
+          <button
+            onClick={closeDeck}
+            className="w-full py-3 bg-grove-amber text-grove-bg font-mono text-xs uppercase tracking-widest hover:bg-grove-amber-bright transition-colors"
+          >
+            [ Enter Sandbox ]
+          </button>
+
+          <div className="font-mono text-[9px] text-grove-text-dim leading-relaxed uppercase tracking-wider">
+            <span className="text-grove-red font-bold">Confidential Preview</span><br/>
+            © 2025-2026 the-grove.ai<br/>
+            CC BY 4.0 License
+          </div>
+        </div>
       </div>
 
       {/* MAIN CANVAS */}
       <div className="flex-1 relative flex flex-col bg-grove-bg">
-        {/* ESCAPE HATCH */}
-        <button
-          onClick={closeDeck}
-          className="absolute top-6 right-6 px-4 py-2 border border-grove-border hover:border-grove-amber hover:text-grove-amber font-mono text-xs uppercase tracking-wider transition-colors z-10 bg-grove-bg/80 backdrop-blur"
-        >
-          [ x Enter Sandbox ]
-        </button>
-
         {/* SLIDE CONTENT */}
         <div className="flex-1 overflow-y-auto flex items-center justify-center p-12">
           <CurrentSlide active={true} />
         </div>
 
         {/* BOTTOM NAV */}
-        <div className="h-16 border-t border-grove-border bg-grove-bg2 flex items-center justify-between px-6 font-mono text-xs">
+        <div className="h-16 border-t border-grove-border bg-grove-bg2 flex items-center justify-between px-6 font-mono text-xs relative z-20">
+          {/* Progress bar */}
+          <div
+            className="absolute top-0 left-0 h-[2px] bg-grove-amber transition-all duration-300"
+            style={{ width: `${((activeSlideIndex + 1) / total) * 100}%` }}
+          />
+
           <button
             onClick={prev}
             disabled={activeSlideIndex === 0}
-            className={`px-4 py-2 transition-colors ${
+            className={`px-4 py-2 transition-colors cursor-pointer ${
               activeSlideIndex === 0
                 ? 'text-grove-text-dim cursor-not-allowed'
                 : 'text-grove-text hover:text-grove-amber'
@@ -113,17 +132,21 @@ export function DeckOverlay() {
           <span className="text-grove-text-dim">
             {activeSlideIndex + 1} / {total}
           </span>
-          <button
-            onClick={next}
-            disabled={activeSlideIndex === total - 1}
-            className={`px-4 py-2 transition-colors ${
-              activeSlideIndex === total - 1
-                ? 'text-grove-text-dim cursor-not-allowed'
-                : 'text-grove-text hover:text-grove-amber'
-            }`}
-          >
-            Next &rarr;
-          </button>
+          {activeSlideIndex === total - 1 ? (
+            <button
+              onClick={closeDeck}
+              className="text-grove-amber hover:text-grove-amber-bright font-mono text-xs uppercase tracking-widest cursor-pointer px-4 py-2 flex items-center gap-2"
+            >
+              Enter Sandbox <span className="text-lg">→</span>
+            </button>
+          ) : (
+            <button
+              onClick={next}
+              className="text-grove-text hover:text-grove-amber px-4 py-2 transition-colors cursor-pointer"
+            >
+              Next &rarr;
+            </button>
+          )}
         </div>
       </div>
     </div>
