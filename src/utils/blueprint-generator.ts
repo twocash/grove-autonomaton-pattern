@@ -182,15 +182,9 @@ export function generateBlueprintHTML(
     </div>
     <div style="text-align: right;">
       <span style="color: #B0A898;">Prompt Schema:</span>
-      ${import.meta.env.VITE_REPO_URL
-        ? `<a href="${import.meta.env.VITE_REPO_URL}/blob/main/src/config/prompts.schema.ts" target="_blank" style="color: #4CAF72; text-decoration: none; border-bottom: 1px dotted #4CAF72;">v1.0 (View Source)</a>`
-        : `<span style="color: #4CAF72;">v1.0</span>`
-      }<br/>
+      <a href="https://github.com/twocash/grove-autonomaton-example/blob/main/src/config/prompts.schema.ts" target="_blank" style="color: #4CAF72; text-decoration: none; border-bottom: 1px dotted #4CAF72;">v1.0 (View Source)</a><br/>
       <span style="color: #D4621A; font-size: 14px; font-weight: bold;">
-        PIPELINE HASH: ${import.meta.env.VITE_REPO_URL
-          ? `<a href="${import.meta.env.VITE_REPO_URL}" target="_blank" style="color: #D4621A; text-decoration: none;">#${escapeHtml(pipelineSignature)}</a>`
-          : `#${escapeHtml(pipelineSignature)}`
-        }
+        PIPELINE HASH: <a href="https://github.com/twocash/grove-autonomaton-example" target="_blank" style="color: #D4621A; text-decoration: none;">#${escapeHtml(pipelineSignature)}</a>
       </span>
     </div>
   </div>
