@@ -119,7 +119,7 @@ test('Intent "${entry.intent}" routes to T${entry.tier} and triggers ${entry.zon
                   key={entry.id}
                   onClick={() => handleEntryClick(entry.id)}
                   className={`
-                    telemetry-entry cursor-pointer
+                    telemetry-entry cursor-pointer relative hover:z-50
                     ${selectedTelemetryId === entry.id ? 'selected' : ''}
                   `}
                 >
@@ -130,7 +130,7 @@ test('Intent "${entry.intent}" routes to T${entry.tier} and triggers ${entry.zon
                   {/* v0.9.4: X-Ray Tooltip for Tier */}
                   <div className="relative group/tier inline-flex items-center">
                     <TierBadge tier={entry.tier} />
-                    <div className="absolute bottom-full left-0 mb-2 hidden group-hover/tier:block z-50 w-64 bg-grove-bg3 border border-grove-border p-3 shadow-2xl">
+                    <div className="absolute top-full left-0 mt-2 hidden group-hover/tier:block z-50 w-64 bg-grove-bg3 border border-grove-border p-3 shadow-2xl">
                       <div className="font-mono text-[9px] text-grove-text-dim uppercase mb-2 border-b border-grove-border/50 pb-1">
                         routing.config.ts
                       </div>
@@ -146,7 +146,7 @@ test('Intent "${entry.intent}" routes to T${entry.tier} and triggers ${entry.zon
                   {/* v0.9.4: X-Ray Tooltip for Zone */}
                   <div className="relative group/zone inline-flex items-center">
                     <ZoneBadge zone={entry.zone} />
-                    <div className="absolute bottom-full left-0 mb-2 hidden group-hover/zone:block z-50 w-64 bg-grove-bg3 border border-grove-border p-3 shadow-2xl">
+                    <div className="absolute top-full left-0 mt-2 hidden group-hover/zone:block z-50 w-64 bg-grove-bg3 border border-grove-border p-3 shadow-2xl">
                       <div className="font-mono text-[9px] text-grove-text-dim uppercase mb-2 border-b border-grove-border/50 pb-1">
                         zones.schema.ts
                       </div>

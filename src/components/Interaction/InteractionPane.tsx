@@ -97,10 +97,8 @@ export function InteractionPane() {
 
   const handlePreset = async (presetInput: string) => {
     if (processing) return
-    // Auto-wake: switch to BYOK mode when user clicks a preset
-    if (state.mode === 'demo') {
-      dispatch({ type: 'SET_MODE', mode: 'interactive' })
-    }
+    // v0.9.4: Removed auto-wake from presets — let demo mode run simulated flow
+    // Auto-wake only triggers when user types in the input field
     setProcessing(true)
     try {
       await processInteraction(presetInput, state, dispatch)

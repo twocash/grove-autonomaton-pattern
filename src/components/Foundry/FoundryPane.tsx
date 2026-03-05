@@ -24,10 +24,10 @@ export function FoundryPane() {
   // Auto-scroll ref
   const streamEndRef = useRef<HTMLDivElement>(null)
 
-  // Auto-scroll when PRD updates
+  // Auto-scroll when PRD updates or compilation completes
   useEffect(() => {
     streamEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [foundry.generatedPRD])
+  }, [foundry.generatedPRD, foundry.isCompiling])
 
   const handleCompile = async () => {
     if (!foundry.input.trim() || foundry.isCompiling) return
@@ -128,8 +128,6 @@ export function FoundryPane() {
             <div className="p-4 font-mono text-sm text-grove-text whitespace-pre-wrap max-h-[60vh] overflow-y-auto">
               {foundry.generatedPRD}
               {foundry.isCompiling && <span className="animate-pulse">▌</span>}
-              {/* Auto-scroll anchor */}
-              <div ref={streamEndRef} />
             </div>
           </div>
         )}
@@ -171,6 +169,9 @@ export function FoundryPane() {
             </button>
           </div>
         )}
+
+        {/* Auto-scroll anchor — must be after CTA to scroll to download button */}
+        <div ref={streamEndRef} />
       </div>
     </div>
   )
