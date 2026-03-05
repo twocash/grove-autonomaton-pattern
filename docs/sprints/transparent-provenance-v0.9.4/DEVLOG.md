@@ -3,7 +3,7 @@
 ## 2026-03-05 — Implementation Session
 
 ### Started: 2026-03-05T12:00:00Z
-### Status: Implementing
+### Status: ✅ Complete — Released as v0.9.8
 
 ### Pattern Check
 - All changes extend existing canonical components
@@ -41,9 +41,9 @@
 
 ### Verification
 - [x] Build compiles without errors (verified 2026-03-05)
-- [ ] X-Ray tooltips appear on hover (needs browser test)
-- [ ] [TEST] button copies valid Jest code (needs browser test)
-- [ ] DiagnosticCard shows config fix guidance (needs browser test)
+- [x] X-Ray tooltips appear on hover
+- [x] [TEST] button copies valid Jest code
+- [x] DiagnosticCard shows config fix guidance
 
 ### Build Output
 ```
@@ -52,5 +52,39 @@ vite v6.4.1 building for production...
 ✓ built in 4.20s
 ```
 
-### Result
-All code changes complete. Build successful. Ready for visual verification and commit.
+---
+
+## Bug Fixes (Post-Implementation)
+
+### Bug 1: Hardcoded GitHub URL
+**Issue:** Provenance links hardcoded to `thegrovefoundation` repo
+**Fix:** Introduced `VITE_REPO_URL` env var with graceful degradation
+**Files:** `blueprint-generator.ts`, `.env.example`
+
+### Bug 2: X-Ray Tooltip Z-Index Clipping
+**Issue:** Tooltips rendered behind subsequent telemetry rows
+**Fix:** Changed from `bottom-full` to `top-full` (drop down instead of up)
+**Files:** `TelemetryStream.tsx`
+
+### Bug 3: Tutorial Buttons Breaking Demo Mode
+**Issue:** Preset buttons dispatched `SET_MODE: 'interactive'`, causing API errors
+**Fix:** Removed auto-wake from `handlePreset()` — only triggers on text input
+**Files:** `InteractionPane.tsx`
+
+### Bug 4: Auto-Scroll Missing Export CTA
+**Issue:** Scroll anchor inside stream container, CTA rendered outside
+**Fix:** Moved anchor after CTA block, added `isCompiling` to useEffect deps
+**Files:** `FoundryPane.tsx`
+
+---
+
+## Release
+
+**Tag:** v0.9.8 — Preview Release
+**Commits:**
+- `e2f3350` feat: v0.9.4 — Transparent Provenance
+- `e7ea987` fix: use VITE_REPO_URL env var for provenance links
+- `6e30f24` fix: v0.9.4 bug fixes — tooltips, demo mode, auto-scroll
+
+**Open Issues:**
+- [#1](https://github.com/twocash/grove-autonomaton-example/issues/1) — Add self-healing/self-evolving architecture section to manifesto
