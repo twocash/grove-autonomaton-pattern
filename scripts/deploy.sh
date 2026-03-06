@@ -1,7 +1,7 @@
 #!/bin/bash
 # deploy.sh — Build and deploy Autonomaton to the-grove.ai/autonomaton
 #
-# Usage: ./deploy.sh [commit message]
+# Usage: ./scripts/deploy.sh [commit message]
 #
 # What it does:
 #   1. Builds the Vite project
@@ -9,13 +9,14 @@
 #   3. Commits and pushes grove-foundation (triggers Cloud Build)
 #
 # Prerequisites:
-#   - grove-autonomaton-example and the-grove-foundation repos side-by-side
+#   - grove-autonomaton-pattern and the-grove-foundation repos side-by-side
 #   - Git configured with push access to the-grove-foundation
 
 set -e  # Exit on any error
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-GROVE_FOUNDATION="../the-grove-foundation"
+REPO_ROOT="$SCRIPT_DIR/.."
+GROVE_FOUNDATION="$REPO_ROOT/../the-grove-foundation"
 AUTONOMATON_DIR="$GROVE_FOUNDATION/autonomaton"
 
 # Colors for output
@@ -24,7 +25,7 @@ YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 echo -e "${YELLOW}[1/4]${NC} Building Autonomaton..."
-cd "$SCRIPT_DIR"
+cd "$REPO_ROOT"
 npm run build
 
 echo -e "${YELLOW}[2/4]${NC} Copying to grove-foundation..."
