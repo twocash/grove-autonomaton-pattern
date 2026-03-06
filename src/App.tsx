@@ -33,6 +33,9 @@ import { DeckOverlay } from './components/Deck'
 // App version — update on each release
 const APP_VERSION = '1.0.0'
 
+// Injected at build time by Vite
+declare const __COMMIT_HASH__: string
+
 export default function App() {
   const { currentView } = useAppState()
 
@@ -57,7 +60,7 @@ export default function App() {
         <a href="https://the-grove.ai" target="_blank" rel="noopener noreferrer" className="hover:text-grove-text transition-colors">
           The Grove Autonomaton Pattern
         </a>
-        {' '}• CC BY 4.0 • the-grove.ai | <span className="text-grove-text uppercase">Research Preview</span> <span className="text-grove-green font-semibold">v{APP_VERSION}</span>
+        {' '}• CC BY 4.0 • the-grove.ai | <span className="text-grove-text uppercase">Research Preview</span> <span className="text-grove-green font-semibold">v{APP_VERSION}</span> <span className="text-grove-text-dim">#{__COMMIT_HASH__}</span>
       </footer>
 
       {/* Deck overlay (v0.7.1) */}
