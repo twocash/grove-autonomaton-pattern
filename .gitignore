@@ -28,3 +28,4 @@ npm-debug.log*
 .claude/settings.local.json
 tsconfig.tsbuildinfo
 nul
+.claude/DEPLOY.md
