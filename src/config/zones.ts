@@ -1,49 +1,127 @@
 /**
- * Zone Schema — Sovereignty Guardrails
+ * Signal Watch Zone Schema — Competitive Intelligence Governance
  *
- * The three zones define the governance model:
- * - GREEN: System executes autonomously
- * - YELLOW: System proposes, human approves
- * - RED: Human-only, system surfaces information
+ * The three zones define the governance model based on:
+ * - Score delta magnitude (how much competitive scores change)
+ * - Signal threat level (routine, significant, critical)
+ * - Special conditions (tier crossings, structural events)
  *
- * This is what makes the Autonomaton pattern different from "AI that does things."
- * The zones are the guardrails. The human stays in control.
+ * Zone Thresholds (per Sovereign Manifesto):
+ * - GREEN: All deltas < 0.05, no signals above "routine"
+ * - YELLOW: Any delta 0.05-0.15, or any "significant" signal
+ * - RED: Any delta >= 0.15, "critical" signal, or tier crossing
+ *
+ * The zones are structural. RED zone operations cannot become skills.
  */
 
-import type { ZonesSchema } from '../state/types'
+import type { ZonesSchema, SignalLevel } from '../state/types'
+
+/**
+ * Score delta thresholds for zone determination
+ */
+export const ZONE_THRESHOLDS = {
+  greenMax: 0.05,    // Below this → GREEN zone
+  yellowMax: 0.15,   // Below this (but >= greenMax) → YELLOW zone
+  // >= yellowMax → RED zone
+} as const
+
+/**
+ * Determine zone based on score delta and signal level
+ */
+export function determineZone(
+  delta: number,
+  signalLevel: SignalLevel,
+  tierCrossing: boolean = false
+): 'green' | 'yellow' | 'red' {
+  // RED zone triggers (any one of these)
+  if (Math.abs(delta) >= ZONE_THRESHOLDS.yellowMax) return 'red'
+  if (signalLevel === 'critical') return 'red'
+  if (tierCrossing) return 'red'
+
+  // YELLOW zone triggers
+  if (Math.abs(delta) >= ZONE_THRESHOLDS.greenMax) return 'yellow'
+  if (signalLevel === 'significant') return 'yellow'
+
+  // Default to GREEN
+  return 'green'
+}
 
 export const defaultZonesSchema: ZonesSchema = {
   zones: {
     green: {
-      meaning: 'Autonomous Routine',
+      meaning: 'Routine Monitoring',
       flywheel_eligible: true,
+      thresholds: {
+        maxScoreDelta: ZONE_THRESHOLDS.greenMax,
+        signalLevel: 'routine',
+      },
       allows: [
-        'execute_confirmed_skills',
-        'write_telemetry',
-        'update_pattern_counts',
+        'log_briefing',
+        'update_telemetry',
+        'archive_low_relevance',
+        'fetch_rss',
+        'apply_keyword_filters',
+        'execute_skills',
+        'classify_keyword_signals',
+        'compile_routine_briefing',
+        'quick_relevance',
       ],
-      description: 'System executes without asking. Confirmed patterns, low-risk operations.',
+      forbids: [
+        'update_baseline_scores',
+        'send_alerts',
+        'recommend_strategic_actions',
+      ],
+      description: 'Routine monitoring with all score deltas < 0.05 and no significant signals. System executes autonomously.',
     },
 
     yellow: {
-      meaning: 'Supervised Proposals',
+      meaning: 'Significant Shift',
       flywheel_eligible: true,
+      thresholds: {
+        minScoreDelta: ZONE_THRESHOLDS.greenMax,
+        maxScoreDelta: ZONE_THRESHOLDS.yellowMax,
+        signalLevel: 'significant',
+      },
       allows: [
-        'propose_new_skill',
-        'propose_rule_change',
-        'draft_content',
-        'analyze_data',
+        'draft_briefing',
+        'highlight_adjustments',
+        'request_analysis',
+        'classify_novel_signals',
+        'multi_subject_correlation',
+        'ad_hoc_scan',
+        'analyze_score_shifting_events',
+        'historical_patterns',
+        'notify_operator',
       ],
-      description: 'System proposes, human approves. Medium-risk operations.',
+      requiresApproval: [
+        'update_baseline_scores',
+        'promote_skill',
+        'modify_source_reliability',
+      ],
+      description: 'Significant shift detected (delta 0.05-0.15 or "significant" signal). System proposes, human approves.',
     },
 
     red: {
-      meaning: 'Human-Only',
-      flywheel_eligible: false,  // Governance lock: destructive ops cannot become skills
+      meaning: 'Structural Event',
+      flywheel_eligible: false,  // CRITICAL: Strategic ops cannot become skills
+      thresholds: {
+        minScoreDelta: ZONE_THRESHOLDS.yellowMax,
+        signalLevel: 'critical',
+        tierCrossing: true,
+      },
       allows: [
-        'surface_information_only',
+        'compile_strategic_briefing',
+        'surface_implications',
+        'present_historical_context',
+        'urgent_notification',
       ],
-      description: 'System surfaces info and waits. Architecture decisions, security changes, destructive operations.',
+      requiresHumanDecision: true,  // ALL actions require human decision
+      forbids: [
+        'suggest_investment_decisions',
+        'recommend_strategic_pivots',
+        'auto_execute_anything',
+      ],
+      description: 'Structural event (delta >= 0.15, "critical" signal, or tier crossing). Human decision required for ALL actions.',
     },
   },
 }
@@ -52,19 +130,20 @@ export const defaultZonesSchema: ZonesSchema = {
  * Serialize zones schema to YAML-like string for display
  */
 export function serializeZonesSchema(schema: ZonesSchema): string {
-  let yaml = `# ZONES SCHEMA — Human-Readable Governance
+  let yaml = `# SIGNAL WATCH ZONES SCHEMA — Competitive Intelligence Governance
 #
-# This file defines the sovereignty guardrails:
-#   GREEN  → System executes autonomously
-#   YELLOW → System proposes, human approves
-#   RED    → Human-only, system surfaces info
+# Zone Thresholds:
+#   GREEN  → Score delta < 0.05, routine signals only
+#   YELLOW → Score delta 0.05-0.15, or significant signals
+#   RED    → Score delta >= 0.15, critical signals, or tier crossing
 #
-# Zones are extensible. Add new zones, redefine
-# what actions each zone allows, change the
-# governance model to fit your domain.
+# Key Governance Rules:
+#   - GREEN zone operations can become skills (flywheel eligible)
+#   - YELLOW zone operations require human approval
+#   - RED zone operations NEVER become skills (governance lock)
 #
-# This file is READ-ONLY in this demo to preserve
-# the core pattern. In production, it's just config.
+# The zone determines autonomy level, not capability level.
+# A Tier 3 model can still only execute what the zone allows.
 
 zones:
 `
@@ -77,6 +156,18 @@ zones:
     yaml += `    allows:\n`
     for (const action of zone.allows) {
       yaml += `      - ${action}\n`
+    }
+    if (zone.forbids) {
+      yaml += `    forbids:\n`
+      for (const action of zone.forbids) {
+        yaml += `      - ${action}\n`
+      }
+    }
+    if (zone.requiresApproval) {
+      yaml += `    requires_approval:\n`
+      for (const action of zone.requiresApproval) {
+        yaml += `      - ${action}\n`
+      }
     }
   }
 
@@ -95,9 +186,21 @@ export function getZoneColorClass(zone: 'green' | 'yellow' | 'red'): string {
  */
 export function getZoneLabel(zone: 'green' | 'yellow' | 'red'): string {
   const labels = {
-    green: 'Autonomous',
-    yellow: 'Supervised',
-    red: 'Human-Only',
+    green: 'Routine',
+    yellow: 'Significant',
+    red: 'Structural',
+  }
+  return labels[zone]
+}
+
+/**
+ * Get zone threshold description for UI
+ */
+export function getZoneThresholdLabel(zone: 'green' | 'yellow' | 'red'): string {
+  const labels = {
+    green: 'Δ < 0.05',
+    yellow: '0.05 ≤ Δ < 0.15',
+    red: 'Δ ≥ 0.15',
   }
   return labels[zone]
 }

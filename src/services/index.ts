@@ -1,4 +1,4 @@
-export { classifyIntent, shouldProposeSkill, generatePatternDescription } from './cognitive-router'
+export { classifyIntent, shouldProposeSkill, generatePatternDescription, categorizeDelta, getAdjustmentPatternKey, getBriefMeOnPatternKey } from './cognitive-router'
 export { processInteraction, continueAfterApproval, rejectInteraction } from './pipeline-orchestrator'
 export { executeCognitiveRequest, streamCognitiveRequest } from './CognitiveAdapter'
 export type { CognitiveResult } from './CognitiveAdapter'

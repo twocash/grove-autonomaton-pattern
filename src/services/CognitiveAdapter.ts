@@ -22,6 +22,17 @@ export interface CognitiveResult {
   tokensOut?: number
 }
 
+/** Research result with web search sources */
+export interface ResearchResult extends CognitiveResult {
+  sources?: Array<{
+    url: string
+    title: string
+    citedText?: string
+    pageAge?: string
+  }>
+  searchCount?: number
+}
+
 /**
  * Execute a cognitive request against the configured provider.
  * Throws on missing API key or provider errors (triggers Jidoka).
@@ -141,6 +152,125 @@ async function executeOpenAI(
     text,
     tokensIn: response.usage?.prompt_tokens,
     tokensOut: response.usage?.completion_tokens,
+  }
+}
+
+// =============================================================================
+// RESEARCH WITH WEB SEARCH (Anthropic only)
+// =============================================================================
+
+/**
+ * Execute a research request with Claude's web search tool enabled.
+ * Returns real sources with citations from actual web searches.
+ *
+ * This demonstrates the power of declarative prompts with real data:
+ * - The template shapes HOW Claude researches
+ * - Web search provides REAL current information
+ * - Provenance tracks sources and template version
+ */
+export async function executeResearchRequest(
+  prompt: string,
+  tierConfig: ModelConfig
+): Promise<ResearchResult> {
+  const { provider, model, apiKey } = tierConfig
+
+  // Web search is currently only supported for Anthropic
+  if (provider.toLowerCase() !== 'anthropic') {
+    throw new Error(`Web search research only supported for Anthropic provider. Got: ${provider}`)
+  }
+
+  if (!apiKey || apiKey.trim() === '') {
+    throw new Error('Missing API Key for Anthropic web search.')
+  }
+
+  const client = new Anthropic({
+    apiKey,
+    dangerouslyAllowBrowser: true,
+  })
+
+  // Call Claude with web search tool enabled
+  const response = await client.messages.create({
+    model: model || 'claude-sonnet-4-20250514',
+    max_tokens: 4096,
+    messages: [{ role: 'user', content: prompt }],
+    tools: [{
+      type: 'web_search_20250305',
+      name: 'web_search',
+      max_uses: 5, // Limit searches per request for cost control
+    }],
+  })
+
+  // Extract text and sources from the response
+  let text = ''
+  const sources: ResearchResult['sources'] = []
+  let searchCount = 0
+
+  for (const block of response.content) {
+    if (block.type === 'text') {
+      text += block.text
+
+      // Extract citations from text blocks
+      // Citations contain the actual cited text and source info
+      const textBlock = block as Anthropic.TextBlock & {
+        citations?: Array<{
+          type: string
+          url?: string
+          title?: string
+          cited_text?: string
+        }>
+      }
+
+      if (textBlock.citations && Array.isArray(textBlock.citations)) {
+        for (const citation of textBlock.citations) {
+          if (citation.type === 'web_search_result_location' && citation.url) {
+            sources.push({
+              url: citation.url,
+              title: citation.title || 'Untitled',
+              citedText: citation.cited_text,
+            })
+          }
+        }
+      }
+    } else if (block.type === 'server_tool_use' && block.name === 'web_search') {
+      // Track that a search was initiated
+      searchCount++
+    } else if (block.type === 'web_search_tool_result') {
+      // Extract search results (these contain URLs, titles, page ages)
+      const resultBlock = block as {
+        type: 'web_search_tool_result'
+        content?: Array<{
+          type: string
+          url?: string
+          title?: string
+          page_age?: string
+        }>
+      }
+
+      if (resultBlock.content && Array.isArray(resultBlock.content)) {
+        for (const result of resultBlock.content) {
+          if (result.type === 'web_search_result' && result.url) {
+            sources.push({
+              url: result.url,
+              title: result.title || 'Untitled',
+              pageAge: result.page_age,
+            })
+          }
+        }
+      }
+    }
+  }
+
+  // Deduplicate sources by URL, keeping the most complete entry
+  const uniqueSources = Array.from(
+    new Map(sources.map(s => [s.url, s])).values()
+  )
+
+  return {
+    text,
+    tokensIn: response.usage?.input_tokens,
+    tokensOut: response.usage?.output_tokens,
+    sources: uniqueSources,
+    searchCount,
   }
 }
 

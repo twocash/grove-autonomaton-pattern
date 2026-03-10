@@ -155,7 +155,7 @@ export async function processInteraction(
     // Check if we should propose a skill (only if zone permits via flywheelEligible)
     if (flywheelEligible) {
       const newCount = patternCountAtCreation!
-      if (shouldProposeSkill(decision.intent, { ...state.patternCounts, [decision.intent]: newCount }, state.skills)) {
+      if (shouldProposeSkill(decision.intent, { ...state.patternCounts, [decision.intent]: newCount }, state.skills, state.routingConfig)) {
         dispatch({
           type: 'PROPOSE_SKILL',
           intent: decision.intent,

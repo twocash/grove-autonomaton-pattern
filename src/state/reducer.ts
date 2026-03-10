@@ -8,6 +8,7 @@
 import type { AppState, AppAction, PipelineStage, StageState } from './types'
 import { defaultRoutingConfig } from '../config/routing'
 import { defaultZonesSchema } from '../config/zones'
+import { DEFAULT_AI_WATCHLIST } from '../config/defaults'
 
 // =============================================================================
 // INITIAL STATE
@@ -25,6 +26,11 @@ export const initialState: AppState = {
 
   routingConfig: defaultRoutingConfig,
   zonesSchema: defaultZonesSchema,
+
+  // Pre-configured AI competitors for frictionless onboarding
+  watchlist: DEFAULT_AI_WATCHLIST,
+  signals: [],
+  pendingAdjustments: [],
 
   pipeline: {
     currentStage: null,
@@ -67,7 +73,7 @@ export const initialState: AppState = {
 
   simulateFailure: 'none',
   configRipple: false,
-  currentView: 'sandbox',
+  currentView: 'watchlist',
 
   // Deck overlay (v0.7.1)
   // Synchronous localStorage check prevents UI flash on first visit
@@ -541,6 +547,70 @@ export function appReducer(state: AppState, action: AppAction): AppState {
           compilerLogs: [],  // v0.9.3: Clear logs on reset
           error: null,
         },
+      }
+
+    // =========================================================================
+    // SIGNAL WATCH — Watchlist and Signals
+    // =========================================================================
+    case 'SET_WATCHLIST':
+      return { ...state, watchlist: action.watchlist }
+
+    case 'ADD_SIGNAL':
+      return {
+        ...state,
+        signals: [...(state.signals || []), action.signal],
+      }
+
+    case 'ADD_SIGNALS':
+      return {
+        ...state,
+        signals: [...(state.signals || []), ...action.signals],
+      }
+
+    case 'ADD_SCORE_ADJUSTMENT':
+      return {
+        ...state,
+        pendingAdjustments: [...(state.pendingAdjustments || []), action.adjustment],
+      }
+
+    case 'APPROVE_SCORE_ADJUSTMENT': {
+      const adjustment = state.pendingAdjustments?.find(a => a.id === action.id)
+      if (!adjustment || !state.watchlist) return state
+
+      return {
+        ...state,
+        watchlist: {
+          ...state.watchlist,
+          subjects: state.watchlist.subjects.map(subject =>
+            subject.id === adjustment.subjectId
+              ? {
+                  ...subject,
+                  baselineScore: adjustment.proposedScore,
+                  lastUpdated: new Date().toISOString(),
+                  history: [
+                    ...subject.history,
+                    {
+                      timestamp: new Date().toISOString(),
+                      score: adjustment.proposedScore,
+                      reason: adjustment.reason,
+                    },
+                  ],
+                }
+              : subject
+          ),
+        },
+        pendingAdjustments: state.pendingAdjustments?.map(a =>
+          a.id === action.id ? { ...a, status: 'approved' as const } : a
+        ),
+      }
+    }
+
+    case 'REJECT_SCORE_ADJUSTMENT':
+      return {
+        ...state,
+        pendingAdjustments: state.pendingAdjustments?.map(a =>
+          a.id === action.id ? { ...a, status: 'rejected' as const } : a
+        ),
       }
 
     default:

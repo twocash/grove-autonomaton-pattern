@@ -1,126 +1,105 @@
 /**
- * Header — Logo, View Toggle, Mode Toggle
+ * Header — Logo and API Key Configuration
  *
- * Typography: Instrument Serif for logo
- * No rounded corners (strict geometry)
- *
- * v0.4.1: Andon dropdown moved to InteractionPane PromptTray
- * v0.8.0: Added centered view toggle (Playground / The Foundry)
+ * Simple header with API key input stored in localStorage.
+ * No mode toggle, no view tabs — this is Signal Watch, not a playground.
  */
 
-import { useAppState, useAppDispatch } from '../../state/context'
+import { useState, useEffect } from 'react'
+
+const API_KEY_STORAGE_KEY = 'signal_watch_api_key'
 
 export function Header() {
-  const { mode, currentView } = useAppState()
-  const dispatch = useAppDispatch()
+  const [apiKey, setApiKey] = useState('')
+  const [isEditing, setIsEditing] = useState(false)
+  const [tempKey, setTempKey] = useState('')
 
-  const handleModeToggle = () => {
-    const newMode = mode === 'demo' ? 'interactive' : 'demo'
-    dispatch({ type: 'SET_MODE', mode: newMode })
-
-    // v0.9.9: Mirror telemetry events for mode transitions
-    if (newMode === 'demo') {
-      // Sandbox restored - switching back to demo mode
-      dispatch({
-        type: 'ADD_TELEMETRY',
-        entry: {
-          id: `system-${Date.now()}`,
-          timestamp: new Date().toISOString(),
-          intent: 'system_alert',
-          tier: 0,
-          zone: 'green',
-          confidence: 1,
-          cost: 0,
-          mode: 'demo',
-          latencyMs: 0,
-          humanFeedback: null,
-          skillMatch: null,
-          message: 'Sandbox restored. Demo Mode active. Live API executions bypassed.',
-        },
-      })
-    } else {
-      // Sandbox breach - switching to interactive mode
-      dispatch({
-        type: 'ADD_TELEMETRY',
-        entry: {
-          id: `system-${Date.now()}`,
-          timestamp: new Date().toISOString(),
-          intent: 'system_alert',
-          tier: 0,
-          zone: 'green',
-          confidence: 1,
-          cost: 0,
-          mode: 'interactive',
-          latencyMs: 0,
-          humanFeedback: null,
-          skillMatch: null,
-          message: 'Sandbox breach: Live Mode activated',
-        },
-      })
+  // Load from localStorage on mount
+  useEffect(() => {
+    const stored = localStorage.getItem(API_KEY_STORAGE_KEY)
+    if (stored) {
+      setApiKey(stored)
     }
+  }, [])
+
+  const handleSave = () => {
+    localStorage.setItem(API_KEY_STORAGE_KEY, tempKey)
+    setApiKey(tempKey)
+    setIsEditing(false)
+  }
+
+  const handleCancel = () => {
+    setTempKey(apiKey)
+    setIsEditing(false)
+  }
+
+  const handleStartEdit = () => {
+    setTempKey(apiKey)
+    setIsEditing(true)
+  }
+
+  const maskKey = (key: string) => {
+    if (!key) return ''
+    if (key.length <= 8) return '••••••••'
+    return key.slice(0, 7) + '••••' + key.slice(-4)
   }
 
   return (
     <header className="border-b border-grove-border px-4 py-2 bg-grove-bg2">
       <div className="flex items-center justify-between">
-        {/* LEFT: Logo — Instrument Serif */}
-        <div className="flex-1">
+        {/* LEFT: Logo */}
+        <div>
           <h1 className="text-lg font-serif text-grove-text leading-tight">
-            Grove Autonomaton
+            Signal Watch
           </h1>
-          <p className="text-xs text-grove-text-dim">Pattern Playground</p>
+          <p className="text-xs text-grove-text-dim">Competitive Intelligence Monitor</p>
         </div>
 
-        {/* CENTER: View Toggle (v0.8.0) */}
-        <div className="flex bg-grove-bg border border-grove-border p-1">
-          <button
-            onClick={() => dispatch({ type: 'SET_VIEW', view: 'sandbox' })}
-            className={`px-4 py-1.5 font-mono text-xs uppercase tracking-wider transition-colors ${
-              currentView === 'sandbox'
-                ? 'bg-grove-bg2 text-grove-amber border border-grove-border'
-                : 'text-grove-text-dim hover:text-grove-text border border-transparent'
-            }`}
-          >
-            Playground
-          </button>
-          <button
-            onClick={() => dispatch({ type: 'SET_VIEW', view: 'foundry' })}
-            className={`px-4 py-1.5 font-mono text-xs uppercase tracking-wider transition-colors ${
-              currentView === 'foundry'
-                ? 'bg-grove-bg2 text-grove-amber border border-grove-border'
-                : 'text-grove-text-dim hover:text-grove-text border border-transparent'
-            }`}
-          >
-            The Foundry
-          </button>
-        </div>
-
-        {/* RIGHT: Controls */}
-        <div className="flex-1 flex items-center justify-end gap-4">
-          {/* Architecture Deck Button (v0.7.1) */}
-          <button
-            onClick={() => dispatch({ type: 'OPEN_DECK' })}
-            className="font-serif text-grove-amber hover:text-grove-amber-bright transition-colors text-sm"
-          >
-            [ Anatomy of an Autonomaton ]
-          </button>
-
-          {/* Mode Toggle */}
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-grove-text-dim">Mode:</span>
-            <button
-              onClick={handleModeToggle}
-              className={`
-                px-3 py-1 text-sm font-medium transition-colors
-                ${mode === 'demo'
-                  ? 'bg-grove-amber text-white'
-                  : 'bg-grove-green text-white'
-                }
-              `}
-            >
-              {mode === 'demo' ? 'Demo' : 'BYOK'}
-            </button>
-          </div>
+        {/* RIGHT: API Key */}
+        <div className="flex items-center gap-3">
+          {isEditing ? (
+            <>
+              <input
+                type="password"
+                value={tempKey}
+                onChange={(e) => setTempKey(e.target.value)}
+                placeholder="sk-ant-api03-..."
+                className="w-64 px-2 py-1 text-sm font-mono bg-grove-bg border border-grove-border text-grove-text placeholder-grove-text-dim focus:outline-none focus:border-grove-amber"
+                autoFocus
+              />
+              <button
+                onClick={handleSave}
+                className="px-2 py-1 text-sm font-mono text-grove-amber hover:text-grove-amber-bright"
+              >
+                Save
+              </button>
+              <button
+                onClick={handleCancel}
+                className="px-2 py-1 text-sm font-mono text-grove-text-dim hover:text-grove-text"
+              >
+                Cancel
+              </button>
+            </>
+          ) : (
+            <>
+              <span className="text-sm text-grove-text-dim">API Key:</span>
+              {apiKey ? (
+                <span className="font-mono text-sm text-grove-text">
+                  {maskKey(apiKey)}
+                </span>
+              ) : (
+                <span className="font-mono text-sm text-zone-yellow">
+                  Not configured
+                </span>
+              )}
+              <button
+                onClick={handleStartEdit}
+                className="px-2 py-1 text-sm font-mono text-grove-amber hover:text-grove-amber-bright border border-grove-border hover:border-grove-amber transition-colors"
+              >
+                {apiKey ? 'Edit' : 'Configure'}
+              </button>
+            </>
+          )}
         </div>
       </div>
     </header>
