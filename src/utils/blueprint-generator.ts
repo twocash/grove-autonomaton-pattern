@@ -259,6 +259,31 @@ export function generateBlueprintHTML(
   </section>
 
   <!-- ═══════════════════════════════════════════════════════════════════════ -->
+  <!-- V. BUILD THIS AUTONOMATON — Two Documents, One Build -->
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+  <section class="section" style="text-align: center; padding: 2rem 0;">
+    <div style="border: 2px solid var(--grove-amber); padding: 2rem; background: rgba(212, 98, 26, 0.06);">
+      <h2 style="margin-bottom: 12px;">Build This Autonomaton</h2>
+      <p style="font-family: 'Fragment Mono', monospace; font-size: 13px; color: var(--grove-text-mid); max-width: 520px; margin: 0 auto 20px; line-height: 1.7;">
+        This Manifesto is the architectural contract.<br/>
+        The <strong style="color: var(--grove-amber);">Recipe Bundle</strong> contains the config files.<br/>
+        Together, they're everything an agentic IDE needs.
+      </p>
+      <ol style="text-align: left; max-width: 480px; margin: 0 auto 20px; font-family: 'Fragment Mono', monospace; font-size: 13px; color: var(--grove-text-mid); line-height: 2;">
+        <li>Open Claude Code (or Cursor, or Windsurf)</li>
+        <li>Drop both files into a new project directory</li>
+        <li>Type: <em style="color: var(--grove-text);">"Read both files. Build Phase 1."</em></li>
+        <li>Review what it builds. Approve or redirect.</li>
+        <li>Repeat for Phases 2–4. Ship it.</li>
+      </ol>
+      <p style="font-family: 'Fragment Mono', monospace; font-size: 11px; color: var(--grove-text-dim);">
+        Phase 1: Skeleton · Phase 2: Intelligence · Phase 3: Flywheel · Phase 4: Polish
+      </p>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
   <!-- FOOTER -->
   <!-- ═══════════════════════════════════════════════════════════════════════ -->
 
