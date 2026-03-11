@@ -14,8 +14,10 @@ import { useState, useRef, useEffect } from 'react'
 import { useAppState, useAppDispatch } from '../../state/context'
 import { compileArchitecture } from '../../services/foundry-compiler'
 import { generateBlueprintHTML, downloadBlueprint } from '../../utils/blueprint-generator'
+import { generateRecipeMarkdown, downloadRecipe } from '../../utils/recipe-generator'
 import { getPipelineSignature } from '../../config/prompts.schema'
 import { getSignalWatchTemplate, getBlankTemplate } from '../../config/foundry-template'
+import { SIGNAL_WATCH_RECIPE } from '../../config/signal-watch-recipe'
 
 export function FoundryPane() {
   const [appName, setAppName] = useState('')
@@ -69,6 +71,11 @@ export function FoundryPane() {
       signature                  // v0.9.3: Pipeline hash for provenance
     )
     downloadBlueprint(appName, html)
+  }
+
+  const handleDownloadRecipe = () => {
+    const markdown = generateRecipeMarkdown(SIGNAL_WATCH_RECIPE)
+    downloadRecipe(appName, markdown)
   }
 
   const hasValidTier3 = modelConfig.tier3.apiKey?.trim()
@@ -196,6 +203,12 @@ export function FoundryPane() {
               className="bg-grove-amber hover:bg-grove-amber-bright text-grove-bg font-mono text-sm uppercase tracking-widest px-8 py-4 transition-colors w-full"
             >
               Download Sovereign Manifesto (.html)
+            </button>
+            <button
+              onClick={handleDownloadRecipe}
+              className="mt-3 border-2 border-grove-amber text-grove-amber hover:bg-grove-amber/10 font-mono text-sm uppercase tracking-widest px-8 py-4 transition-colors w-full"
+            >
+              Download Recipe Bundle (.md)
             </button>
             <button
               onClick={() => dispatch({ type: 'CLEAR_FOUNDRY' })}
