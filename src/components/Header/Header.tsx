@@ -23,8 +23,10 @@ export function Header() {
   }, [])
 
   const handleSave = () => {
-    localStorage.setItem(API_KEY_STORAGE_KEY, tempKey)
-    setApiKey(tempKey)
+    if (tempKey.trim()) {
+      localStorage.setItem(API_KEY_STORAGE_KEY, tempKey.trim())
+      setApiKey(tempKey.trim())
+    }
     setIsEditing(false)
   }
 
@@ -36,6 +38,23 @@ export function Header() {
   const handleStartEdit = () => {
     setTempKey(apiKey)
     setIsEditing(true)
+  }
+
+  // Auto-save on Enter key
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      handleSave()
+    } else if (e.key === 'Escape') {
+      handleCancel()
+    }
+  }
+
+  // Auto-save on blur if key looks valid
+  const handleBlur = () => {
+    if (tempKey.trim() && tempKey.trim().startsWith('sk-')) {
+      handleSave()
+    }
   }
 
   const maskKey = (key: string) => {
@@ -64,6 +83,8 @@ export function Header() {
                   type="password"
                   value={tempKey}
                   onChange={(e) => setTempKey(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  onBlur={handleBlur}
                   placeholder="sk-ant-api03-..."
                   className="w-64 px-2 py-1 text-sm font-mono bg-grove-bg border border-grove-border text-grove-text placeholder-grove-text-dim focus:outline-none focus:border-grove-amber"
                   autoFocus

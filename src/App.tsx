@@ -137,11 +137,12 @@ export default function App() {
   }, [domainConfig])
 
   // Initialize domain setup phase on mount
+  // Skip if subjects already exist (data recovery case)
   useEffect(() => {
-    if (!domainConfig && domainSetupPhase === null) {
+    if (!domainConfig && domainSetupPhase === null && subjects.length === 0) {
       setDomainSetupPhase('industry')
     }
-  }, [domainConfig, domainSetupPhase])
+  }, [domainConfig, domainSetupPhase, subjects.length])
 
   // Add telemetry entry
   const addTelemetry = (entry: Omit<TelemetryEntry, 'id' | 'timestamp'>) => {
