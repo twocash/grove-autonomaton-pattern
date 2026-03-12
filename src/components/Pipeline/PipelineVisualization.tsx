@@ -48,19 +48,6 @@ export function PipelineVisualization() {
           </div>
         ))}
       </div>
-      <div className="text-center mt-1 pb-1">
-        <span className="text-xs text-grove-text-dim">
-          This is one Autonomaton. They chain, mesh, and federate — same pipeline, no integration code.{' '}
-          <a
-            href="https://docs.google.com/document/d/1FYu3FopXayz7ZDKgLCva5jVnCS8rRqbnp9ObPOXdtlI/edit?usp=sharing"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-grove-amber hover:text-grove-amber-bright"
-          >
-            Read the protocol →
-          </a>
-        </span>
-      </div>
     </section>
   )
 }

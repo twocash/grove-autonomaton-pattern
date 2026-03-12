@@ -1,235 +1,86 @@
 /**
- * Signal Watch Routing Configuration
+ * Default Routing Configuration
  *
- * This is the declarative source of truth for competitive intelligence intent routing.
+ * This is the declarative source of truth for intent routing.
  * Edit this to change how the system behaves — no code changes required.
  *
  * Each intent specifies:
- * - tier: Which cognitive tier handles it (0=cached, 1=cheap, 2=premium, 3=apex)
+ * - tier: Which cognitive tier handles it (1=cheap, 2=premium, 3=apex)
  * - zone: Governance level (green=auto, yellow=approve, red=human-only)
  * - keywords: Patterns for demo mode intent matching
- *
- * Zone Thresholds (per Sovereign Manifesto):
- * - GREEN: All score deltas < 0.05, no signals above "routine"
- * - YELLOW: Any delta 0.05-0.15, or any "significant" signal
- * - RED: Any delta >= 0.15, "critical" signal, or tier crossing detected
  */
 
 import type { RoutingConfig } from '../state/types'
 
 export const defaultRoutingConfig: RoutingConfig = {
-  // Skill flywheel configuration (per Sovereign Manifesto)
-  skillPromotion: {
-    afterNApprovals: 5,            // Manifesto: after_n_approvals: 5
-    promotableTiers: [1, 2],       // Tiers eligible for promotion to Tier 0
-    scoreAdjustmentPatterns: true, // Enable flywheel for score adjustments
-  },
-
   intents: {
     // =========================================================================
-    // TIER 0 — Cached Skills (Local, Instant, Free)
-    // Deterministic operations that don't require LLM inference
+    // GREEN ZONE — Autonomous, no approval needed
     // =========================================================================
-    fetch_rss: {
-      tier: 0,
-      zone: 'green',
-      description: 'Pull from configured RSS/API feeds',
-      keywords: ['fetch', 'rss', 'pull', 'refresh', 'feed', 'update feeds'],
-    },
-
-    apply_keyword_filters: {
-      tier: 0,
-      zone: 'green',
-      description: 'Apply learned keyword filters to signals',
-      keywords: ['filter', 'keyword', 'match', 'apply filter'],
-    },
-
-    execute_skills: {
-      tier: 0,
-      zone: 'green',
-      description: 'Execute cached skill patterns',
-      keywords: [],  // Programmatic only — skills fire automatically
-    },
-
-    log_telemetry: {
-      tier: 0,
-      zone: 'green',
-      description: 'Write telemetry entry to audit ledger',
-      keywords: [],  // Programmatic only
-    },
-
-    log_briefing: {
-      tier: 0,
-      zone: 'green',
-      description: 'Log briefing to archive',
-      keywords: ['log', 'archive briefing'],
-    },
-
-    archive_low_relevance: {
-      tier: 0,
-      zone: 'green',
-      description: 'Archive low-relevance signals automatically',
-      keywords: ['archive', 'low relevance', 'dismiss'],
-    },
-
-    // =========================================================================
-    // TIER 1 — Cheap Classification (Fast, Low-Cost)
-    // Simple classification and routine operations
-    // =========================================================================
-    classify_keyword_signals: {
+    capture_idea: {
       tier: 1,
       zone: 'green',
-      description: 'Classify signals by keyword match',
-      keywords: ['classify', 'keyword', 'tag', 'categorize'],
+      description: 'Quick thought capture',
+      keywords: ['capture', 'idea', 'thought', 'note', 'jot', 'remember', 'quick note'],
     },
 
-    compile_routine_briefing: {
+    summarize_notes: {
       tier: 1,
       zone: 'green',
-      description: 'Compile routine daily briefing (no adjustments)',
-      keywords: ['briefing', 'routine', 'daily', 'summary', 'digest'],
-    },
-
-    quick_relevance: {
-      tier: 1,
-      zone: 'green',
-      description: 'Quick relevance scoring for new signals',
-      keywords: ['relevance', 'quick', 'score', 'triage'],
+      description: 'Summarize recent notes',
+      keywords: ['summarize', 'summary', 'notes', 'recap', 'overview', 'digest'],
     },
 
     // =========================================================================
-    // TIER 2 — Premium Classification (Standard Cloud Inference)
-    // Complex analysis requiring more capable models
+    // YELLOW ZONE — Requires human approval
     // =========================================================================
-    classify_novel_signals: {
+    research_topic: {
       tier: 2,
       zone: 'yellow',
-      description: 'Classify signals without keyword match',
-      keywords: ['novel', 'new signal', 'unrecognized', 'unknown'],
+      description: 'Research a topic in depth',
+      keywords: ['research', 'investigate', 'look into', 'deep dive', 'explore', 'find out'],
     },
 
-    multi_subject_correlation: {
+    draft_email: {
       tier: 2,
       zone: 'yellow',
-      description: 'Correlate signals across multiple watchlist subjects',
-      keywords: ['correlate', 'multi', 'cross-subject', 'connect', 'pattern'],
+      description: 'Draft an email from context',
+      keywords: ['draft', 'email', 'write email', 'compose', 'message', 'send'],
     },
 
-    ad_hoc_scan: {
+    propose_skill: {
       tier: 2,
       zone: 'yellow',
-      description: 'User-requested ad-hoc intelligence scan',
-      keywords: ['scan', 'ad-hoc', 'manual', 'investigate', 'research'],
+      description: 'Propose a new automated skill',
+      keywords: ['propose', 'skill', 'automate', 'workflow', 'automation', 'teach'],
     },
 
-    brief_me_on: {
-      tier: 2,
-      zone: 'yellow',
-      description: 'Research briefing on a specific subject',
-      keywords: ['brief me on', 'brief me about', 'what about', 'update on', 'news on', 'tell me about'],
-    },
-
-    draft_briefing: {
-      tier: 2,
-      zone: 'yellow',
-      description: 'Draft briefing with proposed adjustments for review',
-      keywords: ['draft', 'briefing', 'prepare'],
-    },
-
-    highlight_adjustments: {
-      tier: 2,
-      zone: 'yellow',
-      description: 'Highlight proposed score adjustments for review',
-      keywords: ['highlight', 'adjustment', 'delta', 'change'],
-    },
-
-    request_analysis: {
-      tier: 2,
-      zone: 'yellow',
-      description: 'Request deeper analysis of signals',
-      keywords: ['analyze', 'deeper', 'request analysis', 'investigate'],
-    },
-
-    // =========================================================================
-    // TIER 2 — YELLOW (Requires Approval)
-    // Operations that change system state
-    // =========================================================================
-    update_baseline_scores: {
-      tier: 2,
-      zone: 'yellow',
-      description: 'Update baseline competitive scores (requires approval)',
-      keywords: ['update', 'baseline', 'score', 'adjust score'],
-    },
-
-    promote_skill: {
-      tier: 2,
-      zone: 'yellow',
-      description: 'Promote signal pattern to cached skill',
-      keywords: ['promote', 'skill', 'learn', 'automate'],
-    },
-
-    modify_source_reliability: {
-      tier: 2,
-      zone: 'yellow',
-      description: 'Modify source reliability rating',
-      keywords: ['reliability', 'source rating', 'trust', 'weight'],
-    },
-
-    // =========================================================================
-    // TIER 3 — Apex Analysis (Maximum Capability)
-    // Strategic analysis requiring highest-capability models
-    // =========================================================================
-    analyze_score_shifting_events: {
+    analyze_data: {
       tier: 3,
       zone: 'yellow',
-      description: 'Analyze events that may shift competitive scores',
-      keywords: ['analyze', 'shift', 'major', 'event', 'impact'],
-    },
-
-    historical_patterns: {
-      tier: 3,
-      zone: 'yellow',
-      description: 'Analyze historical patterns for prediction',
-      keywords: ['historical', 'pattern', 'trend', 'predict', 'history'],
+      description: 'Complex data analysis',
+      keywords: ['analyze', 'data', 'analysis', 'metrics', 'statistics', 'report'],
     },
 
     // =========================================================================
-    // TIER 3 — RED ZONE (Human Decision Required)
-    // Strategic operations where system surfaces info only
+    // RED ZONE — Human-only, system surfaces info and waits
     // =========================================================================
-    strategic_briefing: {
+    deploy_change: {
       tier: 3,
       zone: 'red',
-      description: 'Compile strategic briefing with tier implications',
-      keywords: ['strategic', 'implications', 'critical', 'urgent'],
+      description: 'Deploy a system change',
+      keywords: ['deploy', 'release', 'push', 'ship', 'publish', 'go live'],
     },
 
-    surface_implications: {
+    delete_data: {
       tier: 3,
       zone: 'red',
-      description: 'Surface strategic implications for human decision',
-      keywords: ['implications', 'surface', 'present', 'show'],
+      description: 'Destructive data operation',
+      keywords: ['delete', 'remove', 'destroy', 'wipe', 'erase', 'drop'],
     },
 
     // =========================================================================
-    // FORBIDDEN INTENTS — Red Zone, Never Auto-Execute
-    // =========================================================================
-    suggest_investment_decisions: {
-      tier: 3,
-      zone: 'red',
-      description: 'FORBIDDEN: Never suggest investment decisions',
-      keywords: ['invest', 'buy', 'sell', 'trade', 'stock'],
-    },
-
-    recommend_strategic_pivots: {
-      tier: 3,
-      zone: 'red',
-      description: 'FORBIDDEN: Never recommend strategic pivots autonomously',
-      keywords: ['pivot', 'strategic change', 'direction'],
-    },
-
-    // =========================================================================
-    // FALLBACK — Unmapped queries
+    // FALLBACK — Unmapped custom prompts
     // =========================================================================
     ad_hoc_query: {
       tier: 2,
@@ -244,9 +95,7 @@ export const defaultRoutingConfig: RoutingConfig = {
  * Serialize config to YAML-like string for display in editor
  */
 export function serializeRoutingConfig(config: RoutingConfig): string {
-  let yaml = '# SIGNAL WATCH ROUTING CONFIGURATION\n'
-  yaml += '# Zone Thresholds: GREEN (<0.05 delta), YELLOW (0.05-0.15), RED (>=0.15)\n\n'
-  yaml += 'intents:\n'
+  let yaml = 'intents:\n'
 
   for (const [name, intent] of Object.entries(config.intents)) {
     yaml += `  ${name}:\n`
@@ -270,9 +119,10 @@ export function parseRoutingConfig(yaml: string): RoutingConfig | { error: strin
 
     for (const line of lines) {
       const trimmed = line.trim()
-      if (!trimmed || trimmed === 'intents:' || trimmed.startsWith('#')) continue
+      if (!trimmed || trimmed === 'intents:') continue
 
       // Intent name: exactly 2-space indent, word characters only, ends with colon
+      // Example: "  capture_idea:" → captures "capture_idea"
       const intentMatch = line.match(/^  (\w+):$/)
       if (intentMatch) {
         currentIntent = intentMatch[1]
@@ -286,6 +136,7 @@ export function parseRoutingConfig(yaml: string): RoutingConfig | { error: strin
       }
 
       // Property: exactly 4-space indent, "key: value" format
+      // Example: "    tier: 2" → captures ["tier", "2"]
       if (currentIntent) {
         const propMatch = line.match(/^    (\w+): (.+)$/)
         if (propMatch) {
@@ -294,12 +145,13 @@ export function parseRoutingConfig(yaml: string): RoutingConfig | { error: strin
 
           if (key === 'tier') {
             const tier = parseInt(value)
-            if (tier >= 0 && tier <= 3) intent.tier = tier as 0 | 1 | 2 | 3
+            if (tier >= 1 && tier <= 3) intent.tier = tier as 1 | 2 | 3
           } else if (key === 'zone') {
             if (['green', 'yellow', 'red'].includes(value)) {
               intent.zone = value as 'green' | 'yellow' | 'red'
             }
           } else if (key === 'description') {
+            // Strip surrounding quotes: "hello world" → hello world
             intent.description = value.replace(/^"|"$/g, '')
           }
         }

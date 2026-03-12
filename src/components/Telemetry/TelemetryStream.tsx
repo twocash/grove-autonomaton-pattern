@@ -23,10 +23,10 @@ import type { TelemetryEntry } from '../../state/types'
 export function TelemetryStream() {
   const telemetry = useTelemetry()
   const dispatch = useAppDispatch()
-  const { selectedTelemetryId, modelConfig, foundry } = useAppState()
+  const { selectedTelemetryId, modelConfig, currentView, foundry } = useAppState()
 
-  // v0.9.3: Foundry compiler logs (disabled for now)
-  const isFoundryCompiling = false // foundry.compilerLogs.length > 0
+  // v0.9.3: Show compiler logs when in Foundry view and compiling
+  const isFoundryCompiling = currentView === 'foundry' && foundry.compilerLogs.length > 0
 
   const handleEntryClick = (id: string) => {
     dispatch({ type: 'SELECT_TELEMETRY', id: selectedTelemetryId === id ? null : id })

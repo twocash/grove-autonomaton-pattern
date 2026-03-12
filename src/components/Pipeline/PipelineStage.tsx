@@ -20,14 +20,14 @@ interface PipelineStageProps {
 
 const STATE_STYLES: Record<StageState, string> = {
   idle: 'bg-grove-border text-grove-text-dim border-grove-border',
-  active: 'bg-grove-amber/90 text-white border-grove-amber',
+  active: 'bg-grove-amber text-white border-grove-amber shadow-lg shadow-grove-amber/25',
   complete: 'bg-grove-green text-white border-grove-green',
   error: 'bg-grove-red text-white border-grove-red shadow-lg shadow-grove-red/25',
 }
 
 const STATE_ANIMATIONS: Record<StageState, string> = {
   idle: '',
-  active: 'animate-[thinking-glow_2s_ease-in-out_infinite]',
+  active: 'animate-pulse',
   complete: '',
   error: 'animate-[shake_0.5s_ease-in-out]',
 }

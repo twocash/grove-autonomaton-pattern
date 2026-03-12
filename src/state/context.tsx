@@ -3,9 +3,6 @@
  *
  * Provides state and dispatch to all components.
  * Uses React's useReducer for predictable state management.
- *
- * NOTE: This uses the existing Signal Watch types and reducer.
- * The core infrastructure (src/core) is prepared for future migration.
  */
 
 import {
@@ -126,25 +123,4 @@ export function usePendingApproval() {
 
 export function useSimulateFailure() {
   return useAppState().simulateFailure
-}
-
-export function usePatternCounts() {
-  return useAppState().patternCounts
-}
-
-// Signal Watch specific selectors
-export function useWatchlist() {
-  return useAppState().watchlist
-}
-
-export function useSignals() {
-  return useAppState().signals
-}
-
-export function usePendingAdjustments() {
-  return useAppState().pendingAdjustments
-}
-
-export function useVoicePreset() {
-  return useAppState().voicePreset
 }

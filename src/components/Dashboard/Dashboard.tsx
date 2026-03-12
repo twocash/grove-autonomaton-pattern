@@ -15,7 +15,7 @@ export function Dashboard() {
   const skills = useSkills()
 
   const avgTier = metrics.tierHistory.length > 0
-    ? (metrics.tierHistory.reduce((sum, entry) => sum + entry.tier, 0) / metrics.tierHistory.length)
+    ? (metrics.tierHistory.reduce((a, b) => a + b, 0) / metrics.tierHistory.length)
     : null
 
   const pctLocal = metrics.interactionCount > 0

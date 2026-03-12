@@ -1,8 +1,7 @@
 {
-  "name": "signal-watch",
+  "name": "grove-autonomaton-playground",
   "private": true,
   "version": "0.1.0",
-  "description": "Competitive Intelligence Monitor - Grove Autonomaton Pattern",
   "type": "module",
   "scripts": {
     "dev": "vite",

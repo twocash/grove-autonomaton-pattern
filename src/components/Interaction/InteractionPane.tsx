@@ -175,7 +175,18 @@ export function InteractionPane() {
               </button>
             </div>
 
-            {/* Foundry Cross-Link disabled for now — will return in future release */}
+            {/* Foundry Cross-Link (v0.8.0, v0.9.5: centered) */}
+            <div className="mt-8 pt-6 border-t border-grove-border w-full max-w-md mx-auto text-center">
+              <p className="font-mono text-xs text-grove-text-dim mb-3">
+                Already understand the pattern?
+              </p>
+              <button
+                onClick={() => dispatch({ type: 'SET_VIEW', view: 'foundry' })}
+                className="text-grove-amber hover:text-grove-amber-bright font-mono text-xs uppercase tracking-widest transition-colors"
+              >
+                Build a Sovereign AI App →
+              </button>
+            </div>
           </div>
         ) : (
           <div className="space-y-4">

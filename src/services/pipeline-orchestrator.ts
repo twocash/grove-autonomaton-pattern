@@ -155,7 +155,7 @@ export async function processInteraction(
     // Check if we should propose a skill (only if zone permits via flywheelEligible)
     if (flywheelEligible) {
       const newCount = patternCountAtCreation!
-      if (shouldProposeSkill(decision.intent, { ...state.patternCounts, [decision.intent]: newCount }, state.skills, state.routingConfig)) {
+      if (shouldProposeSkill(decision.intent, { ...state.patternCounts, [decision.intent]: newCount }, state.skills)) {
         dispatch({
           type: 'PROPOSE_SKILL',
           intent: decision.intent,
@@ -294,25 +294,14 @@ export async function completeExecution(
   dispatch({ type: 'ADD_TELEMETRY', entry: telemetryEntry })
 
   // Update metrics
-  const now = new Date().toISOString()
   dispatch({
     type: 'UPDATE_METRICS',
     delta: {
       totalCost: decision.cost,
       interactionCount: 1,
-      tierHistory: [{
-        timestamp: now,
-        tier: decision.tier,
-        intent: decision.intent,
-      }],
+      tierHistory: [decision.tier],
       localCount: decision.sovereignty === 'local' ? 1 : 0,
-      costHistory: [{
-        timestamp: now,
-        cost: decision.cost,
-        tier: decision.tier,
-        intent: decision.intent,
-        skillMatch: !!decision.skillMatch,
-      }],
+      costHistory: [decision.cost],
     },
   })
 
