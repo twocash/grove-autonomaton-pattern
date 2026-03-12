@@ -405,7 +405,7 @@ export interface TelemetryEntry {
 
 export type Mode = 'demo' | 'interactive'
 
-export type CurrentView = 'dashboard' | 'briefings' | 'config' | 'flywheel'
+export type CurrentView = 'sandbox' | 'foundry' | 'dashboard' | 'briefings' | 'config' | 'flywheel'
 
 export interface ModelConfig {
   provider: string

@@ -74,7 +74,7 @@ export const initialState: AppState = {
 
   simulateFailure: 'none',
   configRipple: false,
-  currentView: 'briefings',
+  currentView: 'foundry',
 
   // Deck overlay (v0.7.1)
   // Synchronous localStorage check prevents UI flash on first visit
